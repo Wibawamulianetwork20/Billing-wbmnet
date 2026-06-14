@@ -1,0 +1,192 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:#f5f7fb;
+}
+
+.login-logo{
+width:100px;
+height:100px;
+object-fit:contain;
+}
+
+.wrapper{
+display:flex;
+min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:250px;
+background:#0d6efd;
+color:white;
+padding:20px;
+position:fixed;
+height:100%;
+overflow:auto;
+}
+
+.logo{
+text-align:center;
+margin-bottom:30px;
+}
+
+.logo-img{
+width:50px;
+height:50px;
+object-fit:contain;
+background:#fff;
+padding:8px;
+border-radius:20px;
+box-shadow:0 4px 12px rgba(0,0,0,.15);
+margin-bottom:10px;
+}
+
+.logo h3{
+margin:0;
+font-weight:700;
+color:#fff;
+}
+
+.logo p{
+margin-top:5px;
+font-size:13px;
+color:rgba(255,255,255,.8);
+}
+
+.sidebar ul{
+list-style:none;
+padding:0;
+}
+
+.sidebar ul li{
+margin-bottom:10px;
+}
+
+.sidebar ul li a{
+display:flex;
+align-items:center;
+gap:10px;
+padding:12px;
+color:white;
+text-decoration:none;
+border-radius:10px;
+transition:.3s;
+}
+
+.sidebar ul li a:hover{
+background:rgba(255,255,255,.2);
+}
+
+.sidebar .active a{
+background:white;
+color:#0d6efd;
+}
+
+/* CONTENT */
+
+.content{
+margin-left:250px;
+padding:20px;
+width:100%;
+}
+
+.top-logo{
+width:45px;
+height:45px;
+object-fit:contain;
+background:#fff;
+padding:5px;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+.stat-card{
+border:none;
+border-radius:15px;
+box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+.success{
+background:#198754;
+color:white;
+}
+
+.danger{
+background:#dc3545;
+color:white;
+}
+
+.warning{
+background:#ffc107;
+}
+
+.dark{
+background:#212529;
+color:white;
+}
+
+.card{
+border:none;
+border-radius:15px;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+.sidebar{
+width:70px;
+padding:10px;
+}
+
+.sidebar .logo p,
+.sidebar ul li a{
+font-size:0;
+}
+
+.sidebar ul li a i{
+font-size:20px;
+}
+
+.content{
+margin-left:70px;
+}
+
+}
+
+.table{
+background:white;
+border-radius:10px;
+overflow:hidden;
+}
+
+.table thead{
+background:#0d6efd;
+color:white;
+}
+
+.table tbody tr:hover{
+background:#f1f5ff;
+}
+
+.badge-status{
+padding:8px 12px;
+border-radius:20px;
+font-size:12px;
+}
+
+.table td,
+.table th{
+vertical-align:middle;
+}
+
+.btn-sm{
+border-radius:8px;
+}
