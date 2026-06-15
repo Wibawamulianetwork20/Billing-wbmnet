@@ -1,14 +1,5 @@
-import { db, auth } from "./firebase.js";
-
-import {
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
-import {
-  collection,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { db } from "./firebase.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 /* =====================
    STATE CONTROL
@@ -16,36 +7,19 @@ import {
 let unsubscribeSnapshot = null;
 
 /* =====================
-   AUTH CHECK
-===================== */
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  console.log("Login:", user.email);
-  startDashboard();
-});
-
-/* =====================
    DATE SAFE RENDER
 ===================== */
 function setTanggal() {
   const el = document.getElementById("tanggal");
   if (!el) return;
-
   el.textContent = new Date().toLocaleDateString("id-ID", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
+    weekday: "long", year: "numeric", month: "long", day: "numeric"
   });
 }
 setTanggal();
 
 /* =====================
-   DASHBOARD CORE ISP
+   DASHBOARD CORE ISP - LANGSUNG JALAN
 ===================== */
 function startDashboard() {
   if (unsubscribeSnapshot) unsubscribeSnapshot();
@@ -55,34 +29,23 @@ function startDashboard() {
     (snap) => {
       console.log("Snapshot ke-trigger! Total doc:", snap.size);
 
-      let total = 0;
-      let aktif = 0;
-      let belum = 0;
-      let menunggak = 0;
-      let pendapatan = 0;
-
+      let total = 0, aktif = 0, belum = 0, menunggak = 0, pendapatan = 0;
       const now = Date.now();
 
       snap.forEach((doc) => {
         const d = doc.data();
         total++;
-
         const harga = Number(d.harga || 0);
         const status = d.status || "AKTIF";
-
-        const jatuhTempo = d.jatuhTempo
-          ? new Date(d.jatuhTempo).getTime()
-          : null;
+        const jatuhTempo = d.jatuhTempo ? new Date(d.jatuhTempo).getTime() : null;
 
         if (status === "NONAKTIF") return;
-
         if (status === "LUNAS") {
           aktif++;
           pendapatan += harga;
         } else {
           belum++;
         }
-
         if (jatuhTempo && jatuhTempo < now && status !== "LUNAS") {
           menunggak++;
         }
@@ -98,7 +61,6 @@ function startDashboard() {
       set("totalBelum", belum);
       set("totalMenunggak", menunggak);
       set("totalPendapatan", "Rp " + pendapatan.toLocaleString("id-ID"));
-
     },
     (error) => {
       console.error("Firestore error:", error);
@@ -106,21 +68,11 @@ function startDashboard() {
   );
 }
 
+// LANGSUNG JALAN TANPA CEK LOGIN
+startDashboard();
+
 /* =====================
-   LOGOUT
+   LOGOUT - HAPUS AJA KALAU GAK PAKE AUTH
 ===================== */
-const logoutBtn = document.getElementById("logoutBtn");
-
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    if (!confirm("Logout?")) return;
-
-    try {
-      await signOut(auth);
-      localStorage.clear();
-      window.location.href = "index.html";
-    } catch (e) {
-      console.error("Logout error:", e);
-    }
-  });
-}
+// const logoutBtn = document.getElementById("logoutBtn");
+// if (logoutBtn) { ... hapus semua ... }
