@@ -1,10 +1,9 @@
+// firebase.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyDbUE5grCTF86R4Dj7NE_i1Vcmzic67u2U",
   authDomain: "billing-wbm-net.firebaseapp.com",
   projectId: "billing-wbm-net",
@@ -14,6 +13,5 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 export const auth = getAuth(app);
 export const db = getFirestore(app);
