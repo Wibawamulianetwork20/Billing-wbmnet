@@ -1,135 +1,144 @@
 import { db, auth } from "./firebase.js";
-import { signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
 import {
   collection,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 /* =====================
-   TANGGAL
+   STATE CONTROL (ANTI DOUBLE RUN)
 ===================== */
-document.addEventListener("DOMContentLoaded", () => {
-  const tanggalEl = document.getElementById("tanggal");
+let dashboardStarted = false;
+let unsubscribeSnapshot = null;
 
-  if (tanggalEl) {
-    tanggalEl.textContent =
-      new Date().toLocaleDateString("id-ID", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-      });
+/* =====================
+   AUTH CHECK (ISP SECURITY LAYER)
+===================== */
+onAuthStateChanged(auth, (user) => {
+
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  console.log("Login:", user.email);
+
+  if (!dashboardStarted) {
+    dashboardStarted = true;
+    startDashboard();
   }
 });
 
 /* =====================
-   LOADING UI
+   DATE SAFE RENDER
 ===================== */
-function setLoading(state) {
-  const set = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
-  };
+function setTanggal() {
+  const el = document.getElementById("tanggal");
+  if (!el) return;
 
-  set("totalPelanggan", state ? "..." : "0");
-  set("totalLunas", state ? "..." : "0");
-  set("totalBelum", state ? "..." : "0");
-  set("totalMenunggak", state ? "..." : "0");
-  set("totalPendapatan", state ? "Loading..." : "Rp 0");
+  el.textContent = new Date().toLocaleDateString("id-ID", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
 }
 
+setTanggal();
+
 /* =====================
-   DASHBOARD REALTIME
+   DASHBOARD CORE ISP
 ===================== */
-function loadDashboard() {
-  setLoading(true);
+function startDashboard() {
 
-  const ref = collection(db, "pelanggan");
+  // prevent duplicate listener
+  if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-  onSnapshot(ref, (snap) => {
-    let totalPelanggan = 0;
-    let totalLunas = 0;
-    let totalBelum = 0;
-    let totalMenunggak = 0;
-    let totalPendapatan = 0;
+  unsubscribeSnapshot = onSnapshot(
+    collection(db, "pelanggan"),
+    (snap) => {
 
-    const now = Date.now();
+      let total = 0;
+      let aktif = 0;
+      let belum = 0;
+      let menunggak = 0;
+      let pendapatan = 0;
 
-    snap.forEach((doc) => {
-      const d = doc.data();
-      totalPelanggan++;
+      const now = Date.now();
 
-      const harga = Number(d.harga || 0);
+      snap.forEach((doc) => {
 
-      if (d.status === "LUNAS") {
-        totalLunas++;
-        totalPendapatan += harga;
-      } else {
+        const d = doc.data();
+        total++;
+
+        const harga = Number(d.harga || 0);
+        const status = d.status || "AKTIF";
+
         const jatuhTempo = d.jatuhTempo
           ? new Date(d.jatuhTempo).getTime()
           : null;
 
-        if (jatuhTempo && jatuhTempo < now) {
-          totalMenunggak++;
+        /* =====================
+           ISP BILLING LOGIC
+        ===================== */
+
+        if (status === "NONAKTIF") return;
+
+        if (status === "LUNAS") {
+          aktif++;
+          pendapatan += harga;
         } else {
-          totalBelum++;
+          belum++;
         }
-      }
-    });
 
-    /* =====================
-       UPDATE UI
-    ===================== */
-    const set = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
+        if (jatuhTempo && jatuhTempo < now && status !== "LUNAS") {
+          menunggak++;
+        }
+      });
 
-    set("totalPelanggan", totalPelanggan);
-    set("totalLunas", totalLunas);
-    set("totalBelum", totalBelum);
-    set("totalMenunggak", totalMenunggak);
+      /* =====================
+         SAFE UI UPDATE (NO ERROR CRASH)
+      ===================== */
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
 
-    set(
-      "totalPendapatan",
-      "Rp " + totalPendapatan.toLocaleString("id-ID")
-    );
+      set("totalPelanggan", total);
+      set("totalLunas", aktif);
+      set("totalBelum", belum);
+      set("totalMenunggak", menunggak);
+      set("totalPendapatan", "Rp " + pendapatan.toLocaleString("id-ID"));
 
-    setLoading(false);
-  });
+    },
+    (error) => {
+      console.error("Firestore error:", error);
+    }
+  );
 }
 
 /* =====================
-   LOGOUT
+   LOGOUT (SAFE HANDLER)
 ===================== */
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
-    if (!confirm("Logout sekarang?")) return;
+
+    if (!confirm("Logout?")) return;
 
     try {
       await signOut(auth);
-      location.href = "index.html";
-    } catch (err) {
-      console.log("Logout error:", err);
+      localStorage.clear();
+      window.location.href = "index.html";
+    } catch (e) {
+      console.error("Logout error:", e);
     }
+
   });
 }
-
-/* =====================
-   SERVICE WORKER (PWA)
-===================== */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("PWA aktif"))
-      .catch((err) => console.log("SW error:", err));
-  });
-}
-
-/* =====================
-   START APP
-===================== */
-document.addEventListener("DOMContentLoaded", loadDashboard);
