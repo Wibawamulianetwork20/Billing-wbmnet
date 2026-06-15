@@ -11,27 +11,21 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 /* =====================
-   STATE CONTROL (ANTI DOUBLE RUN)
+   STATE CONTROL
 ===================== */
-let dashboardStarted = false;
 let unsubscribeSnapshot = null;
 
 /* =====================
-   AUTH CHECK (ISP SECURITY LAYER)
+   AUTH CHECK
 ===================== */
 onAuthStateChanged(auth, (user) => {
-
   if (!user) {
     window.location.href = "index.html";
     return;
   }
 
   console.log("Login:", user.email);
-
-  if (!dashboardStarted) {
-    dashboardStarted = true;
-    startDashboard();
-  }
+  startDashboard();
 });
 
 /* =====================
@@ -48,20 +42,18 @@ function setTanggal() {
     day: "numeric"
   });
 }
-
 setTanggal();
 
 /* =====================
    DASHBOARD CORE ISP
 ===================== */
 function startDashboard() {
-
-  // prevent duplicate listener
   if (unsubscribeSnapshot) unsubscribeSnapshot();
 
   unsubscribeSnapshot = onSnapshot(
     collection(db, "pelanggan"),
     (snap) => {
+      console.log("Snapshot ke-trigger! Total doc:", snap.size);
 
       let total = 0;
       let aktif = 0;
@@ -72,7 +64,6 @@ function startDashboard() {
       const now = Date.now();
 
       snap.forEach((doc) => {
-
         const d = doc.data();
         total++;
 
@@ -82,10 +73,6 @@ function startDashboard() {
         const jatuhTempo = d.jatuhTempo
           ? new Date(d.jatuhTempo).getTime()
           : null;
-
-        /* =====================
-           ISP BILLING LOGIC
-        ===================== */
 
         if (status === "NONAKTIF") return;
 
@@ -101,9 +88,6 @@ function startDashboard() {
         }
       });
 
-      /* =====================
-         SAFE UI UPDATE (NO ERROR CRASH)
-      ===================== */
       const set = (id, val) => {
         const el = document.getElementById(id);
         if (el) el.textContent = val;
@@ -123,13 +107,12 @@ function startDashboard() {
 }
 
 /* =====================
-   LOGOUT (SAFE HANDLER)
+   LOGOUT
 ===================== */
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
-
     if (!confirm("Logout?")) return;
 
     try {
@@ -139,6 +122,5 @@ if (logoutBtn) {
     } catch (e) {
       console.error("Logout error:", e);
     }
-
   });
 }
