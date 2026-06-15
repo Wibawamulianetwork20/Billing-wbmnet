@@ -55,7 +55,7 @@ body {
 
 /* ===== SIDEBAR NEON GLASS ===== */
 .sidebar {
-  width: 280px;
+  width: 150px;
   background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
   position: fixed;
   height: 100vh;
