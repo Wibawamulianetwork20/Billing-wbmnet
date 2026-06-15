@@ -1,166 +1,88 @@
-import { db } from "./firebase.js";
-import {
-  collection,
-  getDocs,
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const pelangganRef = collection(db, "pelanggan");
+// GANTI CONFIG FIREBASE KAMU
+const firebaseConfig = {
+  apiKey: "xxx",
+  authDomain: "xxx.firebaseapp.com",
+  projectId: "xxx"
+};
 
-let setting = {};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-/* =========================
-   LOAD SETTING
-========================= */
-async function loadSetting() {
-  const snap = await getDoc(doc(db, "settings", "app"));
+const selectPelanggan = document.getElementById('selectPelanggan');
+const periode = document.getElementById('periode');
+const btnGenerate = document.getElementById('btnGenerate');
+const btnText = document.getElementById('btnText');
+const invoiceBox = document.getElementById('invoiceBox');
+const btnWA = document.getElementById('btnWA');
 
-  if (snap.exists()) {
-    setting = snap.data();
-  }
-}
+let dataPelanggan = {};
 
-/* =========================
-   ESCAPE HTML
-========================= */
-const escapeHTML = (str = "") =>
-  String(str).replace(/[&<>"']/g, (m) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  }[m]));
+// Set periode default bulan ini
+periode.value = new Date().toISOString().slice(0,7);
 
-/* =========================
-   LOAD INVOICE (FIXED)
-========================= */
-async function loadInvoice() {
-  await loadSetting();
-
-  const snap = await getDocs(pelangganRef);
-
-  const tbody = document.getElementById("tbodyInvoice");
-
-  if (!tbody) return;
-
-  let html = "";
-  let no = 1;
-  const tahun = new Date().getFullYear();
-
-  snap.forEach((item) => {
-    const d = item.data();
-
-    const invoiceNo = `INV-${tahun}-${String(no).padStart(4, "0")}`;
-
-    const harga = Number(d.harga || 0);
-
-    html += `
-      <tr>
-        <td>${invoiceNo}</td>
-        <td>${escapeHTML(d.nama)}</td>
-        <td>${escapeHTML(d.hp)}</td>
-        <td>${escapeHTML(d.paket)}</td>
-        <td>Rp ${harga.toLocaleString("id-ID")}</td>
-        <td>
-          <span class="badge ${
-            d.status === "LUNAS" ? "bg-success" : "bg-danger"
-          }">
-            ${d.status || "BELUM"}
-          </span>
-        </td>
-        <td>
-          <button class="btn btn-primary btn-sm"
-            onclick="cetakInvoice(
-              '${invoiceNo}',
-              '${escapeHTML(d.nama)}',
-              '${escapeHTML(d.paket)}',
-              '${harga}'
-            )">
-            <i class="bi bi-printer"></i>
-          </button>
-
-          <button class="btn btn-success btn-sm"
-            onclick="kirimWA(
-              '${d.hp}',
-              '${escapeHTML(d.nama)}',
-              '${escapeHTML(d.paket)}',
-              '${harga}'
-            )">
-            <i class="bi bi-whatsapp"></i>
-          </button>
-        </td>
-      </tr>
-    `;
-
-    no++;
+// Load pelanggan
+async function loadPelanggan() {
+  const snap = await getDocs(collection(db, 'pelanggan'));
+  selectPelanggan.innerHTML = '<option value="">-- Pilih Pelanggan Dulu --</option>';
+  snap.forEach(doc => {
+    const d = doc.data();
+    dataPelanggan[doc.id] = d;
+    selectPelanggan.innerHTML += `<option value="${doc.id}">${d.nama} - ${d.paket}</option>`;
   });
-
-  tbody.innerHTML = html;
 }
+loadPelanggan();
 
-/* =========================
-   CETAK INVOICE
-========================= */
-window.cetakInvoice = (invoice, nama, paket, harga) => {
-  const win = window.open("", "", "width=800,height=600");
+// Generate Invoice
+btnGenerate.addEventListener('click', () => {
+  const id = selectPelanggan.value;
+  const bln = periode.value;
+  
+  if(!id) return alert('Pilih pelanggan dulu!');
+  if(!bln) return alert('Pilih periode dulu!');
 
-  const isi = `
-    <html>
-    <head>
-      <title>Invoice ${invoice}</title>
-      <style>
-        body { font-family: Arial; padding: 20px; }
-        h2 { margin: 0; }
-        hr { margin: 10px 0; }
-      </style>
-    </head>
-    <body>
-      <h2>WBM NET</h2>
-      <hr>
-      <p><b>Invoice:</b> ${invoice}</p>
-      <p><b>Nama:</b> ${nama}</p>
-      <p><b>Paket:</b> ${paket}</p>
-      <p><b>Tagihan:</b> Rp ${Number(harga).toLocaleString("id-ID")}</p>
-    </body>
-    </html>
-  `;
+  btnGenerate.classList.add('loading');
+  btnText.textContent = 'Loading...';
 
-  win.document.write(isi);
-  win.document.close();
-  win.print();
-};
+  setTimeout(() => {
+    const p = dataPelanggan[id];
+    const [tahun, bulan] = bln.split('-');
+    const namaBulan = new Date(bln).toLocaleDateString('id-ID', {month: 'long', year: 'numeric'});
+    
+    document.getElementById('invNo').textContent = `INV/${tahun}${bulan}/${id.slice(0,6).toUpperCase()}`;
+    document.getElementById('invNama').textContent = p.nama;
+    document.getElementById('invHp').textContent = p.hp;
+    document.getElementById('invAlamat').textContent = p.alamat;
+    document.getElementById('invPaket').textContent = `${p.paket} - ${p.bandwidth} Mbps`;
+    document.getElementById('invPeriode').textContent = namaBulan;
+    document.getElementById('invTotal').textContent = `Rp${p.harga.toLocaleString('id-ID')}`;
+    
+    invoiceBox.style.display = 'block';
+    btnGenerate.classList.remove('loading');
+    btnText.textContent = 'Generate Invoice';
+  }, 800);
+});
 
-/* =========================
-   KIRIM WHATSAPP (FIXED)
-========================= */
-window.kirimWA = (hp, nama, paket, harga) => {
-  if (!hp) return alert("Nomor HP kosong");
+// Kirim WhatsApp
+btnWA.addEventListener('click', () => {
+  const nama = document.getElementById('invNama').textContent;
+  const hp = document.getElementById('invHp').textContent.replace(/\D/g,'');
+  const paket = document.getElementById('invPaket').textContent;
+  const periodeTxt = document.getElementById('invPeriode').textContent;
+  const total = document.getElementById('invTotal').textContent;
+  const noInv = document.getElementById('invNo').textContent;
 
-  // lebih aman (08 / +62 / 62)
-  let fixHp = String(hp).replace(/[^0-9]/g, "");
+  const pesan = `Halo ${nama}%0A%0A` +
+    `Tagihan Internet WBM.NET%0A` +
+    `No Invoice: ${noInv}%0A` +
+    `Paket: ${paket}%0A` +
+    `Periode: ${periodeTxt}%0A` +
+    `Total: ${total}%0A%0A` +
+    `Mohon transfer sebelum tgl 10 ya.%0A` +
+    `BCA 1234567890 a.n WBM NET%0A%0A` +
+    `Konfirmasi pembayaran bisa reply WA ini. Terima kasih 🙏`;
 
-  if (fixHp.startsWith("0")) {
-    fixHp = "62" + fixHp.slice(1);
-  }
-
-  const pesan = `Halo ${nama}
-
-Tagihan internet Anda:
-
-Paket : ${paket}
-Nominal : Rp ${Number(harga).toLocaleString("id-ID")}
-
-Terima kasih.
-WBM NET`;
-
-  window.open(
-    `https://wa.me/${fixHp}?text=${encodeURIComponent(pesan)}`
-  );
-};
-
-/* =========================
-   START
-========================= */
-loadInvoice();
+  window.open(`https://wa.me/62${hp.slice(1)}?text=${pesan}`, '_blank');
+});
