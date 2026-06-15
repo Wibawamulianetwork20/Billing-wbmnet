@@ -2,233 +2,167 @@
 <html lang="id">
 
 <head>
+  <meta charset="UTF-8">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- ANTI CACHE TOTAL (PENTING UNTUK FIREBASE + GITHUB) -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
-<title>Dashboard WBM NET</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Dashboard WBM NET</title>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
+  <!-- VERSIONED CSS (ANTI CACHE) -->
+  <link rel="stylesheet" href="style.css?v=1.0.0">
+
+  <meta name="theme-color" content="#0d6efd">
 </head>
 
 <body>
 
 <div class="wrapper">
 
-<!-- SIDEBAR -->
+  <!-- SIDEBAR -->
+  <div class="sidebar">
 
-<div class="sidebar">
+    <div class="logo text-center p-3">
+      <img src="icon-192.png" class="logo-img" width="70">
+      <h4 class="mt-2 mb-0">WBM NET</h4>
+      <small class="text-muted">ISP Billing</small>
+    </div>
 
-<div class="logo">
+    <ul>
+      <li class="active">
+        <a href="dashboard.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
+      </li>
 
-<img
-src="icon-192.png"
-alt="WBM NET"
-class="logo-img">
+      <li>
+        <a href="pelanggan.html"><i class="bi bi-people-fill"></i> Pelanggan</a>
+      </li>
 
-<h3>WBM NET</h3>
+      <li>
+        <a href="invoice.html"><i class="bi bi-receipt"></i> Invoice</a>
+      </li>
 
-<p>Billing System</p>
+      <li>
+        <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i> Laporan</a>
+      </li>
 
-</div>
+      <li>
+        <a href="pengaturan.html"><i class="bi bi-gear-fill"></i> Pengaturan</a>
+      </li>
 
-<ul>
+      <li>
+        <a href="#" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      </li>
+    </ul>
 
-<li class="active">
-<a href="dashboard.html">
-<i class="bi bi-grid-fill"></i>
-Dashboard
-</a>
-</li>
+  </div>
 
-<li>
-<a href="pelanggan.html">
-<i class="bi bi-people-fill"></i>
-Pelanggan
-</a>
-</li>
+  <!-- CONTENT -->
+  <div class="content">
 
-<li>
-<a href="invoice.html">
-<i class="bi bi-receipt"></i>
-Invoice
-</a>
-</li>
+    <!-- TOPBAR -->
+    <div class="topbar d-flex justify-content-between align-items-center">
 
-<li>
-<a href="laporan.html">
-<i class="bi bi-bar-chart-fill"></i>
-Laporan
-</a>
-</li>
+      <div>
+        <h4 class="mb-0">Dashboard</h4>
+        <small class="text-muted">Billing System ISP</small>
+      </div>
 
-<li>
-<a href="pengaturan.html">
-<i class="bi bi-gear-fill"></i>
-Pengaturan
-</a>
-</li>
+      <div class="text-end">
+        <span id="tanggal" class="fw-bold"></span>
+        <div class="small text-muted" id="userRole">role: admin</div>
+      </div>
 
-<li>
-<a href="#" id="logoutBtn">
-<i class="bi bi-box-arrow-right"></i>
-Logout
-</a>
-</li>
+    </div>
 
-</ul>
+    <!-- STATS -->
+    <div class="row g-3 mt-1">
 
-</div>
+      <div class="col-md-3">
+        <div class="card stat-card">
+          <div class="card-body">
+            <h6>Total Pelanggan</h6>
+            <h2 id="totalPelanggan">0</h2>
+          </div>
+        </div>
+      </div>
 
-<!-- CONTENT -->
+      <div class="col-md-3">
+        <div class="card stat-card success">
+          <div class="card-body">
+            <h6>Lunas</h6>
+            <h2 id="totalLunas">0</h2>
+          </div>
+        </div>
+      </div>
 
-<div class="content">
+      <div class="col-md-3">
+        <div class="card stat-card danger">
+          <div class="card-body">
+            <h6>Belum Bayar</h6>
+            <h2 id="totalBelum">0</h2>
+          </div>
+        </div>
+      </div>
 
-<div class="topbar">
+      <div class="col-md-3">
+        <div class="card stat-card dark">
+          <div class="card-body">
+            <h6>Menunggak</h6>
+            <h2 id="totalMenunggak">0</h2>
+          </div>
+        </div>
+      </div>
 
-<div class="d-flex align-items-center">
+      <div class="col-12">
+        <div class="card stat-card warning">
+          <div class="card-body">
+            <h6>Total Pendapatan</h6>
+            <h2 id="totalPendapatan">Rp 0</h2>
+          </div>
+        </div>
+      </div>
 
-<img
-src="logo.png"
-class="top-logo me-2">
+    </div>
 
-<div>
+    <!-- INFO -->
+    <div class="card mt-4 shadow-sm">
 
-<h4 class="mb-0">
-Dashboard
-</h4>
+      <div class="card-header">
+        Aktivitas Sistem
+      </div>
 
-<small>
-Billing WBM NET
-</small>
+      <div class="card-body">
 
-</div>
+        <p class="mb-1">✔ ISP Billing System aktif</p>
+        <p class="mb-1">✔ Realtime Firestore monitoring</p>
+        <p class="mb-1">✔ Siap auto suspend & WhatsApp reminder</p>
 
-</div>
+        <hr>
 
-<span id="tanggal"></span>
+        <p class="text-muted mb-0">
+          WBM NET ISP Panel v1.0
+        </p>
 
-</div>
+      </div>
 
-<div class="row g-3">
+    </div>
 
-<div class="col-md-3">
-
-<div class="card stat-card">
-
-<div class="card-body">
-
-<h6>Total Pelanggan</h6>
-
-<h2 id="totalPelanggan">0</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-3">
-
-<div class="card stat-card success">
-
-<div class="card-body">
-
-<h6>Lunas</h6>
-
-<h2 id="totalLunas">0</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-3">
-
-<div class="card stat-card danger">
-
-<div class="card-body">
-
-<h6>Belum Bayar</h6>
-
-<h2 id="totalBelum">0</h2>
+  </div>
 
 </div>
 
-</div>
-
-</div>
-
-<div class="col-md-3">
-
-<div class="card stat-card dark">
-
-<div class="card-body">
-
-<h6>Menunggak</h6>
-
-<h2 id="totalMenunggak">0</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-12">
-
-<div class="card stat-card warning">
-
-<div class="card-body">
-
-<h6>Total Pendapatan</h6>
-
-<h2 id="totalPendapatan">
-Rp 0
-</h2>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="card mt-4">
-
-<div class="card-header">
-
-Aktivitas Sistem
-
-</div>
-
-<div class="card-body">
-
-<p>
-Selamat datang di Billing WBM NET.
-</p>
-
-<p>
-Kelola pelanggan dan pembayaran dengan mudah.
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<script type="module" src="dashboard.js"></script>
+<!-- SCRIPT (VERSION CONTROL ANTI CACHE) -->
+<script type="module" src="dashboard.js?v=1.0.0"></script>
 
 </body>
-
 </html>
