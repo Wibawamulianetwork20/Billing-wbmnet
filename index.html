@@ -3,297 +3,227 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NAMA USAHA | Jasa Instalasi Wifi Rumah & Kantor | Cibarusah</title>
-<meta name="description" content="Jasa instalasi wifi rumah, kantor, RT-RW Net area Cibarusah. Instalasi cepat, kabel rapi, sinyal stabil. Garansi 1 tahun + support 24 jam. Konsultasi gratis.">
+<title>WBM.NET - Internet RT-RW Net Depok Cepat & Stabil</title>
+<meta name="description" content="Internet RT-RW Net Depok. Paket 5Mbps 150rb, 7Mbps 170rb, 10Mbps 200rb. Instalasi 300rb. Prorate otomatis.">
 
-<!-- Schema LocalBusiness -->
-<script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"LocalBusiness",
-  "name":"NAMA USAHA",
-  "image":"logo.png",
-  "url":"https://domainkamu.id",
-  "telephone":"+62xxx",
-  "address":{"@type":"PostalAddress","addressLocality":"Cibarusah","addressRegion":"Jawa Barat"},
-  "priceRange":"Rp"
-}
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --primary: #0a4d9c;
-  --accent: #f97316;
-  --dark: #0f172a;
-  --gray: #64748b;
-  --light: #f8fafc;
-  --border: #e2e8f0;
-  --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-  --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1);
+:root{
+  --primary:#4f46e5;
+  --primary-dark:#4338ca;
+  --accent:#06b6d4;
+  --dark:#0f172a;
+  --gray:#64748b;
+  --light:#f8fafc;
+  --border:#e2e8f0;
+  --success:#22c55e;
+  --glass:rgba(255,255,255,0.8);
+  --shadow:0 20px 60px rgba(79,70,229,0.15);
 }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;line-height:1.6;color:var(--dark);background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--dark); line-height: 1.6; }
+nav{position:sticky;top:0;background:var(--glass);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:100}
+.nav-wrap{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.logo{font-size:26px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{color:var(--dark);text-decoration:none;font-weight:600;transition:0.3s}
+.nav-links a:hover{color:var(--primary)}
 
-.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+.hero{padding:140px 0 100px;background:radial-gradient(1200px 600px at 80% -10%,rgba(79,70,229,0.12),transparent)}
+.hero h1{font-size:64px;font-weight:800;line-height:1.15;margin-bottom:24px;letter-spacing:-2px}
+.hero h1 span{background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:20px;color:var(--gray);margin-bottom:40px;max-width:580px}
+.btn{display:inline-block;padding:18px 36px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;text-decoration:none;border-radius:16px;font-weight:700;transition:0.3s;border:none;cursor:pointer;font-size:17px;box-shadow:0 8px 24px rgba(79,70,229,0.3)}
+.btn:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(79,70,229,0.4)}
+.btn-outline{background:transparent;color:var(--primary);border:2px solid var(--primary);box-shadow:none}
+.btn-outline:hover{background:var(--primary);color:white}
 
-/* HEADER */
-header { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 16px 0; position: sticky; top: 0; z-index: 100; }
-.nav { display: flex; justify-content: space-between; align-items: center; }
-.logo { height: 40px; width: auto; }
-.nav-links { display: flex; gap: 32px; }
-.nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; font-size: 15px; transition: color 0.2s; }
-.nav-links a:hover { color: var(--primary); }
+section{padding:100px 0}
+.section-head{text-align:center;margin-bottom:70px}
+.section-head h2{font-size:44px;font-weight:800;margin-bottom:16px;letter-spacing:-1px}
+.subtitle{font-size:18px;color:var(--gray)}
 
-/* HERO */
-.hero { background: linear-gradient(135deg, var(--primary) 0%, #073b7a 100%); color: white; padding: 120px 0; position: relative; overflow: hidden; }
-.hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: var(--light); clip-path: polygon(0 100%, 100% 100%, 100% 0); }
-.hero h1 { font-size: 52px; font-weight: 800; line-height: 1.2; margin-bottom: 20px; letter-spacing: -1px; }
-.hero p { font-size: 20px; opacity: 0.95; max-width: 650px; margin: 0 auto 32px; }
-.btn {
-  background: var(--accent);
-  color: white;
-  padding: 16px 40px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 700;
-  display: inline-block;
-  font-size: 17px;
-  box-shadow: var(--shadow-lg);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.btn:hover { transform: translateY(-3px); box-shadow: 0 25px 50px -12px rgba(249,115,22,0.4); }
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px}
+.paket{background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:28px;padding:44px;position:relative;transition:0.4s}
+.paket:hover{border-color:var(--primary);transform:translateY(-10px);box-shadow:var(--shadow)}
+.paket.popular{border:2px solid var(--primary);background:linear-gradient(180deg,white,rgba(79,70,229,0.03))}
+.badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:8px 20px;border-radius:30px;font-size:12px;font-weight:700;letter-spacing:0.5px}
+.paket h3{font-size:30px;margin-bottom:10px;font-weight:800}
+.instalasi-label{color:var(--gray);font-size:13px;margin-top:24px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+.instalasi-harga{font-size:36px;font-weight:800;color:var(--dark);margin-bottom:10px}
+.bulanan-label{color:var(--gray);font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+.harga{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:28px}
+.harga span{font-size:18px;color:var(--gray);font-weight:600}
+.paket ul{list-style:none;margin-bottom:32px}
+.paket li{padding:14px 0;border-bottom:1px dashed var(--border);color:var(--gray);font-weight:500}
+.paket li:last-child{border:none}
+.paket li:before{content:"✓";color:var(--success);font-weight:800;margin-right:10px;font-size:18px}
 
-/* SECTION */
-section { padding: 100px 0; }
-section.gray { background: var(--light); }
-.section-head { text-align: center; margin-bottom: 60px; }
-h2 { font-size: 40px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
-.subtitle { font-size: 18px; color: var(--gray); max-width: 700px; margin: 0 auto; }
+.gray{background:linear-gradient(180deg,#f8fafc 0%,#ffffff 100%)}
+.card{background:var(--glass);backdrop-filter:blur(10px);padding:36px;border-radius:20px;border:1px solid var(--border);transition:0.3s}
+.card:hover{border-color:var(--primary);box-shadow:var(--shadow)}
 
-/* KEUNGGULAN */
-.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
-.card {
-  background: white;
-  padding: 36px 28px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  text-align: center;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-.card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
-.icon {
-  width: 64px;
-  height: 64px;
-  background: var(--light);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-  font-size: 32px;
-}
-.card h3 { font-size: 20px; margin-bottom: 10px; color: var(--primary); font-weight: 700; }
+.calculator{background:linear-gradient(135deg,rgba(79,70,229,0.05),rgba(6,182,212,0.05));border:2px solid var(--primary);border-radius:32px;padding:48px;margin-top:80px}
+.calculator h3{font-size:28px;font-weight:800;margin-bottom:8px;text-align:center}
+.calculator select,.calculator input{width:100%;padding:16px;border:2px solid var(--border);border-radius:14px;font-size:16px;font-family:inherit;font-weight:500;background:white;transition:0.3s}
+.calculator select:focus,.calculator input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(79,70,229,0.1)}
+.hasil-box{background:white;padding:40px;border-radius:24px;text-align:center;border:2px solid var(--primary);animation:fadeIn 0.4s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.hasil-angka{font-size:56px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:16px 0}
 
-/* PAKET */
-.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; }
-.paket {
-  background: white;
-  padding: 44px 32px;
-  border-radius: 16px;
-  border: 2px solid var(--border);
-  text-align: center;
-  position: relative;
-  transition: transform 0.3s;
-}
-.paket:hover { transform: translateY(-8px); }
-.paket.popular { border-color: var(--primary); box-shadow: var(--shadow-lg); }
-.badge {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--accent);
-  color: white;
-  padding: 8px 20px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-.paket h3 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-.harga { font-size: 48px; font-weight: 800; color: var(--primary); margin: 24px 0; }
-.harga span { font-size: 16px; color: var(--gray); font-weight: 500; }
-.paket ul { list-style: none; margin: 24px 0; text-align: left; }
-.paket ul li { padding: 10px 0; border-bottom: 1px solid var(--light); color: var(--gray); }
-.paket ul li:last-child { border: none; }
-.btn-outline {
-  background: transparent;
-  color: var(--primary);
-  border: 2px solid var(--primary);
-  padding: 14px 32px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 700;
-  display: inline-block;
-  width: 100%;
-  transition: all 0.2s;
-}
-.btn-outline:hover { background: var(--primary); color: white; }
+footer{background:var(--dark);color:white;padding:70px 0;text-align:center}
 
-/* TESTIMONI */
-.grid-3-testimoni { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-.testimoni { background: white; padding: 32px; border-radius: 12px; border-left: 4px solid var(--primary); }
-.testimoni p { font-style: italic; color: var(--gray); margin-bottom: 16px; }
-.testimoni.nama { font-weight: 700; color: var(--dark); }
-
-/* FAQ */
-.faq-item { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 12px; }
-.faq-item h4 { font-size: 18px; margin-bottom: 8px; color: var(--primary); }
-
-/* CTA BOTTOM */
-.cta { background: var(--primary); color: white; padding: 80px 0; text-align: center; border-radius: 16px; }
-.cta h2 { color: white; }
-
-/* FOOTER */
-footer { background: var(--dark); color: white; padding: 70px 0 30px; margin-top: 80px; }
-.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
-footer h4 { margin-bottom: 16px; font-size: 16px; }
-footer a { color: #cbd5e1; text-decoration: none; line-height: 2; }
-footer a:hover { color: white; }
-.copyright { border-top: 1px solid #334155; padding-top: 30px; text-align: center; color: #94a3b8; font-size: 14px; }
-
-/* HAPUS CSS WA-FLOAT KARENA PAKAI TAWK.TO */
-
-@media(max-width: 768px) {
- .hero h1 { font-size: 36px; }
- .nav-links { display: none; }
- .footer-grid { grid-template-columns: 1fr; }
-  section { padding: 60px 0; }
-}
+@media(max-width:768px){
+  .hero h1{font-size:40px;letter-spacing:-1px}
+  .hero{padding:100px 0 60px}
+  .nav-links{display:none}
+  .grid-3{grid-template-columns:1fr}
+  section{padding:70px 0}
+  .calculator{padding:32px 24px}
+  .hasil-angka{font-size:42px}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="container nav">
-    <img src="logo.png" alt="NAMA USAHA Logo" class="logo">
-    <nav class="nav-links">
-      <a href="#layanan">Layanan</a>
-      <a href="#paket">Paket</a>
-      <a href="#testimoni">Testimoni</a>
-      <a href="#faq">FAQ</a>
-      <a href="#kontak">Kontak</a>
-    </nav>
+<nav>
+  <div class="container">
+    <div class="nav-wrap">
+      <a href="#" class="logo">WBM.NET</a>
+      <ul class="nav-links">
+        <li><a href="#paket">Paket</a></li>
+        <li><a href="#cara">Cara Daftar</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="https://wa.me/6281234567890">CS WhatsApp</a></li>
+      </ul>
+    </div>
   </div>
-</header>
+</nav>
 
 <section class="hero">
-  <div class="container" style="text-align:center">
-    <h1>Instalasi Wifi Profesional<br>Untuk Rumah & Kantor</h1>
-    <p>Survey cepat, instalasi rapi, sinyal stabil. Didukung teknisi bersertifikat + garansi resmi 1 tahun. Area Cibarusah dan sekitarnya.</p>
-    <a href="login.html" class="btn">login</a>
-  </div>
-</section>
-
-<section id="layanan">
   <div class="container">
-    <div class="section-head">
-      <h2>Standar Layanan Kami</h2>
-      <p class="subtitle">Lebih dari sekadar pasang. Kami berikan solusi jaringan yang andal dan terukur</p>
-    </div>
-    <div class="grid-4">
-      <div class="card">
-        <div class="icon">⚡</div>
-        <h3>Respons Cepat</h3>
-        <p>Survey 24 jam setelah kontak. Instalasi bisa H+1. Tim standby area Cibarusah.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🛠️</div>
-        <h3>Instalasi Rapi</h3>
-        <p>Penataan kabel sesuai standar ISP. Penggunaan conduit & ducting. Rumah tetap rapi.</p>
-      </div>
-      <div class="card">
-        <div class="icon">📊</div>
-        <h3>Setting Optimal</h3>
-        <p>Site survey, channel optimization, bandwidth management. Speed sesuai paket.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🛡️</div>
-        <h3>Garansi Resmi</h3>
-        <p>Garansi perangkat 1 tahun + garansi jasa instalasi. Support via WA 24/7.</p>
-      </div>
-    </div>
+    <h1>Internet <span>Stabil & Jujur</span><br>Khusus Warga Cibarusah</h1>
+    <p>WBM Net tanpa FUP, tanpa ribet. Instalasi 1x24 jam. Bayar instalasi 300rb, prorate dihitung otomatis sesuai tanggal pasang.</p>
   </div>
 </section>
 
 <section id="paket" class="gray">
   <div class="container">
     <div class="section-head">
-      <h2>Paket Instalasi + Internet</h2>
-      <p class="subtitle">Harga transparan. Sudah termasuk perangkat, instalasi, dan konfigurasi</p>
+      <h2>Pilih Paket Sesuai Kebutuhan</h2>
+      <p class="subtitle">Bulan ini cukup bayar instalasi 300rb. Bulan depan baru bayar full tgl 1</p>
     </div>
+    
     <div class="grid-3">
       <div class="paket">
-        <h3>Basic</h3>
-        <div class="harga">Rp299rb<span>/bulan</span></div>
+        <h3>5 Mbps</h3>
+        <div class="instalasi-label">Bayar Awal</div>
+        <div class="instalasi-harga">Rp300rb<span> instalasi</span></div>
+        <div class="bulanan-label" style="margin-top:24px">Paket Bulanan</div>
+        <div class="harga">150rb<span>/bulan</span></div>
         <ul>
-          <li>Speed 20 Mbps Dedicated</li>
+          <li>Speed 5 Mbps Dedicated 1:1</li>
           <li>Free Router Dual Band</li>
-          <li>Instalasi + Kabel 50m</li>
-          <li>Untuk 1-3 Pengguna</li>
+          <li>Kabel 50m + Jasa Teknisi</li>
+          <li>Untuk 1-2 Pengguna</li>
           <li>Support 08.00-20.00</li>
         </ul>
-        <a href="https://wa.me/628xxxxxxxxxx" class="btn-outline">Pilih Paket</a>
+        <button id="btn-5Mbps" onclick="bayarInstalasi('5Mbps', 150000)" class="btn-outline" style="width:100%">Bayar Instalasi 300rb</button>
       </div>
-      <div class="paket popular">
-        <div class="badge">REKOMENDASI</div>
-        <h3>Family</h3>
-        <div class="harga">Rp399rb<span>/bulan</span></div>
+      
+      <div class="paket">
+        <h3>7 Mbps</h3>
+        <div class="instalasi-label">Bayar Awal</div>
+        <div class="instalasi-harga">Rp300rb<span> instalasi</span></div>
+        <div class="bulanan-label" style="margin-top:24px">Paket Bulanan</div>
+        <div class="harga">170rb<span>/bulan</span></div>
         <ul>
-          <li>Speed 50 Mbps Dedicated</li>
+          <li>Speed 7 Mbps Dedicated 1:1</li>
           <li>Free Router WiFi 6</li>
-          <li>Instalasi + Kabel 100m</li>
-          <li>Untuk 5-10 Pengguna</li>
+          <li>Kabel 75m + Jasa Teknisi</li>
+          <li>Untuk 3-5 Pengguna</li>
           <li>Support 24 Jam</li>
         </ul>
-        <a href="https://wa.me/628xxxxxxxxxx" class="btn" style="width:100%">Pilih Paket</a>
+        <button id="btn-7Mbps" onclick="bayarInstalasi('7Mbps', 170000)" class="btn" style="width:100%">Bayar Instalasi 300rb</button>
       </div>
+      
       <div class="paket">
-        <h3>Business</h3>
-        <div class="harga">Rp699rb<span>/bulan</span></div>
+        <h3>10 Mbps</h3>
+        <div class="instalasi-label">Bayar Awal</div>
+        <div class="instalasi-harga">Rp300rb<span> instalasi</span></div>
+        <div class="bulanan-label" style="margin-top:24px">Paket Bulanan</div>
+        <div class="harga">200rb<span>/bulan</span></div>
         <ul>
-          <li>Speed 100 Mbps Dedicated</li>
+          <li>Speed 10 Mbps Dedicated 1:1</li>
           <li>Router Enterprise + AP</li>
-          <li>IP Public Statis</li>
-          <li>SLA 99.5%</li>
+          <li>Kabel 100m + Jasa Teknisi</li>
+          <li>Untuk 5-8 Pengguna</li>
           <li>Support Prioritas 24 Jam</li>
         </ul>
-        <a href="https://wa.me/628xxxxxxxxxx" class="btn-outline">Pilih Paket</a>
+        <button id="btn-10Mbps" onclick="bayarInstalasi('10Mbps', 200000)" class="btn-outline" style="width:100%">Bayar Instalasi 300rb</button>
+      </div>
+    </div>
+
+    <p style="text-align:center; margin-top:32px; font-size:14px; color:var(--gray)">
+      *Biaya instalasi Rp300rb sekali bayar. Prorate dihitung otomatis di bawah
+    </p>
+
+    <!-- KALKULATOR PRORATE BULAN INI -->
+    <div class="calculator">
+      <h3>Cek Prorate Bulan Ini</h3>
+      <p style="text-align:center; color:var(--gray); font-size:15px; margin-bottom:32px">Pilih paket + tanggal pasang. Gratis prorate kalau pasang tgl 26-30</p>
+      
+      <div style="display:grid; gap:20px; max-width:500px; margin:0 auto">
+        <div>
+          <label style="display:block; font-weight:700; margin-bottom:10px; font-size:15px">Pilih Paket</label>
+          <select id="selectPaket">
+            <option value="150000">5 Mbps - Rp150.000/bulan</option>
+            <option value="170000" selected>7 Mbps - Rp170.000/bulan</option>
+            <option value="200000">10 Mbps - Rp200.000/bulan</option>
+          </select>
+        </div>
+        
+        <div>
+          <label style="display:block; font-weight:700; margin-bottom:10px; font-size:15px">Tanggal Pasang Bulan Ini</label>
+          <input type="date" id="inputTanggal">
+        </div>
+        
+        <button onclick="hitungProrate()" class="btn" style="width:100%; margin-top:8px">Hitung Prorate Sekarang</button>
+        
+        <div id="hasilProrate" style="display:none; margin-top:24px">
+          <div class="hasil-box">
+            <p style="color:var(--gray); font-size:15px; font-weight:600; margin-bottom:8px">Tagihan Prorate Bulan Ini</p>
+            <div class="hasil-angka" id="txtProrate">Rp0</div>
+            <p style="font-size:14px; color:var(--gray)" id="catatanProrate"></p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="testimoni">
+<section id="cara">
   <div class="container">
     <div class="section-head">
-      <h2>Dipercaya 500+ Pelanggan</h2>
-      <p class="subtitle">Testimoni real dari klien rumah dan kantor</p>
+      <h2>Daftar Cuma 3 Langkah</h2>
+      <p class="subtitle">Gak pake ribet, langsung nyala</p>
     </div>
-    <div class="grid-3-testimoni">
-      <div class="testimoni">
-        <p>"Instalasi rapi banget, teknisi profesional. Wifi sekarang stabil buat WFH sekeluarga."</p>
-        <div class="nama">Bapak Andi, Cikarang</div>
+    <div class="grid-3">
+      <div class="card">
+        <h4 style="font-size:22px;margin-bottom:14px;color:var(--primary);font-weight:800">1. Pilih Paket</h4>
+        <p style="color:var(--gray)">Klik tombol "Bayar Instalasi 300rb" sesuai paket yang kamu butuhin</p>
       </div>
-      <div class="testimoni">
-        <p>"Respon cepat, garansi beneran jalan. Ada kendala langsung dikirim teknisi gratis."</p>
-        <div class="nama">Ibu Sari, Cileungsi</div>
+      <div class="card">
+        <h4 style="font-size:22px;margin-bottom:14px;color:var(--primary);font-weight:800">2. Bayar QRIS</h4>
+        <p style="color:var(--gray)">Scan QRIS dari Tripay. Otomatis terverifikasi, gak perlu kirim bukti</p>
       </div>
-      <div class="testimoni">
-        <p>"Untuk kantor kami paket Business mantap. IP public stabil buat CCTV + server."</p>
-        <div class="nama">PT Maju Jaya, Cibarusah</div>
+      <div class="card">
+        <h4 style="font-size:22px;margin-bottom:14px;color:var(--primary);font-weight:800">3. Teknisi Datang</h4>
+        <p style="color:var(--gray)">Instalasi maksimal 1x24 jam. Internet langsung aktif di rumah kamu</p>
       </div>
     </div>
   </div>
@@ -302,80 +232,105 @@ footer a:hover { color: white; }
 <section id="faq" class="gray">
   <div class="container">
     <div class="section-head">
-      <h2>Pertanyaan Umum</h2>
+      <h2>Pertanyaan Yang Sering Ditanya</h2>
     </div>
-    <div style="max-width:800px; margin:0 auto">
-      <div class="faq-item">
-        <h4>Berapa lama proses instalasi?</h4>
-        <p>Survey 1x24 jam. Jika disetujui, instalasi bisa dilakukan H+1. Durasi 2-4 jam tergantung jarak dan kerumitan.</p>
+    <div style="max-width:820px;margin:0 auto">
+      <div class="card" style="text-align:left; margin-bottom:18px">
+        <h4 style="font-size:19px; margin-bottom:12px; color:var(--primary); font-weight:700">Berapa yang harus dibayar bulan pertama?</h4>
+        <p style="color:var(--gray)">Rp300.000 biaya instalasi + prorate sesuai tanggal pasang. Pasang tanggal 26-30 gratis prorate. Bulan depan baru bayar paket full tanggal 1.</p>
       </div>
-      <div class="faq-item">
-        <h4>Apakah ada biaya pemasangan?</h4>
-        <p>Tidak ada. Biaya instalasi + router + kabel sudah termasuk paket. Hanya bayar bulan pertama di muka.</p>
+      <div class="card" style="text-align:left; margin-bottom:18px">
+        <h4 style="font-size:19px; margin-bottom:12px; color:var(--primary); font-weight:700">Gimana cara hitung prorate?</h4>
+        <p style="color:var(--gray)">Rumus: Harga paket ÷ 30 hari × jumlah hari kepake. Contoh: 7Mbps 170rb pasang tgl 16 = 170000 ÷ 30 × 15 hari = Rp85.000. Udah ada kalkulator otomatis di atas.</p>
       </div>
-      <div class="faq-item">
-        <h4>Area coverage sampai mana?</h4>
-        <p>Cibarusah, Cikarang Selatan, Cileungsi, Jonggol. Luar area bisa konsultasi dulu untuk cek ketersediaan.</p>
+      <div class="card" style="text-align:left; margin-bottom:18px">
+        <h4 style="font-size:19px; margin-bottom:12px; color:var(--primary); font-weight:700">Area jangkauan sampai mana?</h4>
+        <p style="color:var(--gray)">Depok dan sekitarnya: Beji, Pancoran Mas, Sukmajaya, Cilodong, Limo. Chat CS buat cek kabel udah sampai rumah kamu atau belum.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<section id="kontak">
-  <div class="container">
-    <div class="cta">
-      <h2>Siap Upgrade Koneksi Anda?</h2>
-      <p style="font-size:18px; margin:20px 0 30px; opacity:0.9">Tim teknisi kami siap survey lokasi Anda. Konsultasi 100% gratis, tanpa komitmen.</p>
-      <a href="https://wa.me/628xxxxxxxxxx?text=Minta%20Survey%20Wifi" class="btn" style="background:white; color:var(--primary)">Chat via WhatsApp</a>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="container">
-    <div class="footer-grid">
-      <div>
-        <img src="logo.png" alt="Logo" style="height:40px; margin-bottom:20px; filter:brightness(0) invert(1)">
-        <p style="color:#94a3b8">NAMA USAHA adalah penyedia jasa instalasi jaringan dan wifi profesional. Berpengalaman 5+ tahun melayani rumah, kantor, dan RT-RW Net area Bekasi Timur.</p>
-      </div>
-      <div>
-        <h4>Layanan</h4>
-        <p><a href="#">Instalasi Wifi Rumah</a></p>
-        <p><a href="#">Jaringan Kantor</a></p>
-        <p><a href="#">RT-RW Net</a></p>
-        <p><a href="#">Maintenance</a></p>
-      </div>
-      <div>
-        <h4>Perusahaan</h4>
-        <p><a href="#">Tentang Kami</a></p>
-        <p><a href="#">Portfolio</a></p>
-        <p><a href="#">Karir</a></p>
-      </div>
-      <div>
-        <h4>Kontak</h4>
-        <p style="color:#94a3b8">Jl. Raya Cibarusah No.XX<br>
-        Cibarusah, Bekasi 17340<br>
-        wa.me/628xxxxxxxxxx<br>
-        admin@namausaha.id</p>
-      </div>
-    </div>
-    <div class="copyright">© 2026 NAMA USAHA. All Rights Reserved.</div>
+    <p style="font-size:28px;font-weight:800;margin-bottom:14px;background:linear-gradient(135deg,#fff,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">WBM.NET</p>
+    <p style="color:#94a3b8">Internet RT-RW Net Depok | CS WhatsApp: 0812-3456-7890</p>
+    <p style="margin-top:24px;font-size:14px;color:#64748b">© 2026 WBM.NET. Dibuat dengan ❤️ untuk warga Depok</p>
   </div>
 </footer>
 
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/6a311ab54946e31d43a1fa2b/1jr7t0m43';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const functions = firebase.functions();
+
+async function bayarInstalasi(paket, hargaPaket) {
+  const btn = document.getElementById('btn-'+paket);
+  const textLama = btn.innerText;
+  btn.innerText = 'Membuat Invoice...';
+  btn.disabled = true;
+
+  try {
+    const createInvoice = functions.httpsCallable('createTripayInvoice');
+    const result = await createInvoice({
+      amount: 300000,
+      product: 'Biaya Instalasi Wifi ' + paket,
+      method: 'QRIS',
+      customer_note: 'Paket ' + paket + ' Rp' + hargaPaket + '/bulan'
+    });
+    window.location.href = result.data.checkout_url;
+  } catch (err) {
+    alert('Gagal: ' + err.message);
+    btn.innerText = textLama;
+    btn.disabled = false;
+  }
+}
+
+function hitungProrate() {
+  const hargaPaket = parseInt(document.getElementById('selectPaket').value);
+  const tglInput = document.getElementById('inputTanggal').value;
+  const hasilDiv = document.getElementById('hasilProrate');
+  
+  if(!tglInput) {
+    alert('Pilih tanggal pasang dulu ya');
+    return;
+  }
+  
+  const tglPasang = new Date(tglInput);
+  const bulan = tglPasang.getMonth();
+  const tahun = tglPasang.getFullYear();
+  const tanggal = tglPasang.getDate();
+  
+  const lastDay = new Date(tahun, bulan + 1, 0).getDate();
+  const hariKepake = lastDay - tanggal + 1;
+  
+  let prorate = 0;
+  let catatan = '';
+  
+  if(tanggal >= 26) {
+    prorate = 0;
+    catatan = '*Pasang tgl 26-30 gratis prorate. Mulai bayar full tgl 1 bulan depan';
+  } else {
+    prorate = Math.round((hargaPaket / 30) * hariKepake / 1000) * 1000;
+    catatan = `*${hariKepake} hari × Rp${Math.round(hargaPaket/30).toLocaleString('id-ID')}/hari`;
+  }
+  
+  document.getElementById('txtProrate').innerText = 'Rp' + prorate.toLocaleString('id-ID');
+  document.getElementById('catatanProrate').innerText = catatan;
+  hasilDiv.style.display = 'block';
+  hasilDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('inputTanggal').valueAsDate = new Date();
 </script>
-<!--End of Tawk.to Script-->
 
 </body>
 </html>
