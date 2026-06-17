@@ -49,11 +49,20 @@ nav.scrolled{
   border-bottom:1px solid rgba(255,255,255,0.15)
 }
 .nav-wrap{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
-.logo{
-  font-size:28px;font-weight:800;
-  background:linear-gradient(135deg,#fff,#a78bfa);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  transition:0.3s;text-decoration:none;letter-spacing:-0.5px
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* jarak logo sama teks */
+  font-weight: 700;
+  font-size: 20px;
+  text-decoration: none;
+  color: #1e40af; /* warna biru WBM */
+}
+
+.logo-img {
+  width: 28px; /* ukuran logo, kecil aja */
+  height: 28px;
+  object-fit: contain;
 }
 .logo:hover{filter:drop-shadow(0 0 20px rgba(167,139,250,0.5));transform:scale(1.05)}
 .nav-links{display:flex;gap:40px;list-style:none}
