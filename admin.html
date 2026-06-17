@@ -5,47 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Admin - WBM.NET</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{--primary:#4f46e5;--accent:#06b6d4;--success:#22c55e;--danger:#ef4444;--dark:#0f172a}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#090a0f;color:white}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#090a0f;color:white;min-height:100vh}
 nav{position:sticky;top:0;background:rgba(10,14,26,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.1);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;z-index:10}
 .logo{display:flex;gap:10px;align-items:center;font-weight:800;font-size:20px}
 .logo img{width:28px;filter:brightness(0) invert(1)}
-.btn-logout{padding:10px 20px;background:rgba(239,68,68,0.2);border:1px solid var(--danger);color:var(--danger);border-radius:8px;cursor:pointer;font-weight:600}
+.btn-logout{padding:10px 20px;background:rgba(239,68,68,0.2);border:1px solid var(--danger);color:var(--danger);border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
 .container{max-width:1400px;margin:0 auto;padding:40px 24px}
 h1{font-size:32px;margin-bottom:8px}
 .subtitle{color:#94a3b8;margin-bottom:40px}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:40px}
-.stat-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);padding:24px;border-radius:16px}
-.stat-label{font-size:13px;color:#94a3b8;margin-bottom:8px}
+.stat-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);padding:24px;border-radius:16px;transition:0.3s}
+.stat-card:hover{border-color:rgba(79,70,229,0.5);transform:translateY(-2px)}
+.stat-label{font-size:13px;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
 .stat-value{font-size:32px;font-weight:800}
 .stat-value.success{color:var(--success)}
 .stat-value.danger{color:var(--danger)}
 .stat-value.accent{color:var(--accent)}
 .section{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px;margin-bottom:28px}
-.section h2{font-size:20px;margin-bottom:20px}
-.search-box{width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;margin-bottom:20px}
+.section h2{font-size:20px;margin-bottom:20px;font-weight:700}
+.search-box{width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;margin-bottom:20px;font-size:14px;outline:none}
+.search-box:focus{border-color:var(--primary)}
 table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:12px;color:#94a3b8;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.1)}
+th{text-align:left;padding:12px;color:#94a3b8;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.1);text-transform:uppercase}
 td{padding:16px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:14px}
 tr:hover{background:rgba(255,255,255,0.03)}
-.badge{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.badge{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;display:inline-block}
 .badge.aktif{background:rgba(34,197,94,0.2);color:var(--success)}
 .badge.nunggak{background:rgba(239,68,68,0.2);color:var(--danger)}
 .badge.baru{background:rgba(6,182,212,0.2);color:var(--accent)}
 .badge.lunas{background:rgba(34,197,94,0.2);color:var(--success)}
 .badge.belum{background:rgba(245,158,11,0.2);color:#f59e0b}
-.btn-small{padding:8px 14px;background:var(--primary);border:none;border-radius:8px;color:white;font-size:13px;cursor:pointer;font-weight:600;margin-right:6px}
-.btn-small:hover{opacity:0.8}
+.btn-small{padding:8px 14px;background:var(--primary);border:none;border-radius:8px;color:white;font-size:13px;cursor:pointer;font-weight:600;margin-right:6px;transition:0.2s}
+.btn-small:hover{opacity:0.8;transform:translateY(-1px)}
 .btn-success{background:var(--success)}
 .btn-accent{background:var(--accent)}
 .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:28px}
 @media(max-width:1024px){.grid-2{grid-template-columns:1fr}}
-.loading{color:#94a3b8;text-align:center;padding:20px}
-.error-box{background:rgba(239,68,68,0.1);border:1px solid var(--danger);padding:16px;border-radius:12px;color:#fca5a5;margin-top:12px;font-size:14px}
+.loading{color:#94a3b8;text-align:center;padding:40px;font-size:14px}
+.error-box{background:rgba(239,68,68,0.1);border:1px solid var(--danger);padding:16px;border-radius:12px;color:#fca5a5;margin-bottom:24px;font-size:14px;display:none}
 .action-bar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+canvas{max-height:300px}
 </style>
 </head>
 <body>
@@ -62,7 +65,7 @@ tr:hover{background:rgba(255,255,255,0.03)}
   <h1>Dashboard</h1>
   <p class="subtitle">Ringkasan bisnis WBM.NET Cibarusah</p>
 
-  <div id="errorBox" class="error-box" style="display:none"></div>
+  <div id="errorBox" class="error-box"></div>
 
   <div class="stats-grid">
     <div class="stat-card">
@@ -96,29 +99,29 @@ tr:hover{background:rgba(255,255,255,0.03)}
           <thead>
             <tr><th>Nama</th><th>Paket</th><th>Status</th><th>Aksi</th></tr>
           </thead>
-          <tbody id="tabelPelanggan"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
+          <tbody id="tabelPelanggan"><tr><td colspan="4" class="loading">Loading data pelanggan...</td></tr></tbody>
         </table>
       </div>
     </div>
 
     <div class="section">
-      <h2>Pemasukan 6 Bulan</h2>
+      <h2>Pemasukan 6 Bulan Terakhir</h2>
       <canvas id="chartPemasukan"></canvas>
     </div>
   </div>
 
   <div class="section">
-    <h2>Tagihan Terbaru</h2>
+    <h2>Tagihan Bulan Ini</h2>
     <div class="action-bar">
-      <button class="btn-small btn-success" onclick="kirimTagihanMassal()">📤 Kirim Tagihan Bulan Ini</button>
-      <button class="btn-small" onclick="kirimTagihanNunggak()">⚠️ Kirim ke yg Nunggak Saja</button>
+      <button class="btn-small btn-success" onclick="kirimTagihanMassal()">📤 Kirim Tagihan Semua</button>
+      <button class="btn-small" onclick="kirimTagihanNunggak()">⚠️ Kirim ke yg Nunggak</button>
     </div>
     <div style="overflow-x:auto">
       <table>
         <thead>
           <tr><th>Tanggal</th><th>Nama</th><th>Paket</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr>
         </thead>
-        <tbody id="tabelTagihan"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+        <tbody id="tabelTagihan"><tr><td colspan="6" class="loading">Loading data tagihan...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -146,7 +149,7 @@ let chartInstance = null;
 function showError(msg){
   const box = document.getElementById('errorBox');
   box.style.display = 'block';
-  box.innerHTML = `<b>Error:</b> ${msg}<br><small>Kalau muncul "requires an index", klik link biru di console F12 lalu Create Index</small>`;
+  box.innerHTML = `<b>⚠️ Error:</b> ${msg}<br><small>Kalau muncul "requires an index", buka Console F12 > klik link biru > Create Index</small>`;
 }
 
 auth.onAuthStateChanged(async user => {
@@ -173,6 +176,7 @@ async function loadData(){
     const bulanIni = new Date().getMonth() + 1;
     const tahunIni = new Date().getFullYear();
 
+    // 1. Load semua user
     const snapUsers = await db.collection('users').get();
     allUsers = [];
     let totalAktif = 0;
@@ -186,11 +190,12 @@ async function loadData(){
     document.getElementById('totalPelanggan').innerText = totalAktif;
     renderPelanggan(allUsers);
 
+    // 2. Load tagihan bulan ini - butuh index: bulan+tahun+createdAt
     const snapTagihan = await db.collection('tagihan')
-     .where('bulan','==',bulanIni)
-     .where('tahun','==',tahunIni)
-     .orderBy('createdAt','desc')
-     .get();
+    .where('bulan','==',bulanIni)
+    .where('tahun','==',tahunIni)
+    .orderBy('createdAt','desc')
+    .get();
 
     let totalTagihan = 0, belumBayar = 0, pemasukan = 0;
     let htmlTagihan = '';
@@ -200,9 +205,10 @@ async function loadData(){
       const user = allUsers.find(u => u.id === t.uid);
       const nama = user?.nama || 'Unknown';
       const paket = user?.paket || '-';
+      const jumlah = Number(t.jumlah) || 0;
 
-      totalTagihan += t.jumlah || 0;
-      if(t.status === 'lunas') pemasukan += t.jumlah || 0;
+      totalTagihan += jumlah;
+      if(t.status === 'lunas') pemasukan += jumlah;
       if(t.status === 'belum') belumBayar++;
 
       const tgl = t.createdAt?.toDate() || new Date();
@@ -211,11 +217,11 @@ async function loadData(){
           <td>${tgl.getDate()}/${tgl.getMonth()+1}</td>
           <td>${nama}</td>
           <td>${paket}</td>
-          <td>Rp${(t.jumlah || 0).toLocaleString('id-ID')}</td>
+          <td>Rp${jumlah.toLocaleString('id-ID')}</td>
           <td><span class="badge ${t.status}">${t.status}</span></td>
           <td>
             ${t.status === 'belum'? `<button class="btn-small btn-success" onclick="markLunas('${doc.id}')">Lunas</button>` : ''}
-            <button class="btn-small" onclick="kirimWA('${user?.nohp || ''}','${nama}',${t.jumlah || 0},${bulanIni},${tahunIni})">WA</button>
+            <button class="btn-small" onclick="kirimWA('${user?.nohp || ''}','${nama}',${jumlah},${bulanIni},${tahunIni})">WA</button>
           </td>
         </tr>
       `;
@@ -224,10 +230,12 @@ async function loadData(){
     document.getElementById('totalTagihan').innerText = 'Rp' + totalTagihan.toLocaleString('id-ID');
     document.getElementById('belumBayar').innerText = belumBayar;
     document.getElementById('pemasukan').innerText = 'Rp' + pemasukan.toLocaleString('id-ID');
-    document.getElementById('tabelTagihan').innerHTML = htmlTagihan || '<tr><td colspan="6" class="loading">Belum ada tagihan</td></tr>';
+    document.getElementById('tabelTagihan').innerHTML = htmlTagihan || '<tr><td colspan="6" class="loading">Belum ada tagihan bulan ini</td></tr>';
 
+    // 3. Render chart
     await renderChart();
 
+    // 4. Search pelanggan
     document.getElementById('searchPelanggan').addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
       const filtered = allUsers.filter(u =>
@@ -241,7 +249,7 @@ async function loadData(){
   } catch(e) {
     console.error(e);
     if(e.code === 'failed-precondition') {
-      showError('Query butuh index. Buka Console F12, klik link biru, lalu Create Index di Firestore.');
+      showError('Query butuh index Firestore. Buka Console F12, klik link biru, lalu Create Index.');
     } else {
       showError('Gagal load data: ' + e.message);
     }
@@ -266,7 +274,7 @@ function renderPelanggan(users) {
 
 async function renderChart() {
   const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-  const promises = [];
+  const results = [];
 
   for(let i = 5; i >= 0; i--) {
     const date = new Date();
@@ -274,21 +282,23 @@ async function renderChart() {
     const bulan = date.getMonth() + 1;
     const tahun = date.getFullYear();
 
-    const p = db.collection('tagihan')
-     .where('bulan','==',bulan)
-     .where('tahun','==',tahun)
-     .where('status','==','lunas')
-     .get().then(snap => {
-        let total = 0;
-        snap.forEach(doc => total += doc.data().jumlah || 0);
-        return {bulan: namaBulan[bulan-1], total};
-      }).catch(() => ({bulan: namaBulan[bulan-1], total: 0}));
-    promises.push(p);
-  }
+    try {
+      const snap = await db.collection('tagihan')
+      .where('bulan','==',bulan)
+      .where('tahun','==',tahun)
+      .where('status','==','lunas')
+      .get();
 
-  const results = await Promise.all(promises);
-  const labels = results.map(r => r.bulan);
-  const dataPemasukan = results.map(r => r.total);
+      let total = 0;
+      snap.forEach(doc => {
+        total += Number(doc.data().jumlah) || 0;
+      });
+      results.push({bulan: namaBulan[bulan-1], total});
+    } catch(err) {
+      console.warn('Chart bulan', bulan, err.message);
+      results.push({bulan: namaBulan[bulan-1], total: 0});
+    }
+  }
 
   const ctx = document.getElementById('chartPemasukan').getContext('2d');
   if(chartInstance) chartInstance.destroy();
@@ -296,14 +306,15 @@ async function renderChart() {
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels,
+      labels: results.map(r => r.bulan),
       datasets: [{
         label: 'Pemasukan',
-        data: dataPemasukan,
+        data: results.map(r => r.total),
         borderColor: '#06b6d4',
         backgroundColor: 'rgba(6,182,212,0.1)',
         tension: 0.4,
-        fill: true
+        fill: true,
+        borderWidth: 2
       }]
     },
     options: {
@@ -311,7 +322,7 @@ async function renderChart() {
       maintainAspectRatio: false,
       plugins:{legend:{display:false}},
       scales:{
-        y:{ticks:{color:'#94a3b8', callback: v => 'Rp' + v.toLocaleString('id-ID')}},
+        y:{ticks:{color:'#94a3b8', callback: v => 'Rp' + Number(v).toLocaleString('id-ID')}},
         x:{ticks:{color:'#94a3b8'}}
       }
     }
@@ -337,11 +348,10 @@ function kirimWA(nohp, nama, jumlah, bulan, tahun){
   const no = nohp.startsWith('0')? '62' + nohp.substring(1) : nohp;
   let pesan = `Halo ${nama}, ini pengingat tagihan WBM.NET`;
   if(jumlah > 0) pesan += ` bulan ${bulan}/${tahun} sebesar Rp${jumlah.toLocaleString('id-ID')}`;
-  pesan += '. Silakan cek dashboard ya.';
+  pesan += '. Silakan cek dashboard ya. Terima kasih 🙏';
   window.open(`https://wa.me/${no}?text=${encodeURIComponent(pesan)}`, '_blank');
 }
 
-// FITUR BARU: Kirim tagihan massal
 async function kirimTagihanMassal() {
   if(!confirm('Buka tab WA untuk semua pelanggan bulan ini?')) return;
 
@@ -349,16 +359,16 @@ async function kirimTagihanMassal() {
   const tahunIni = new Date().getFullYear();
 
   const snap = await db.collection('tagihan')
-   .where('bulan','==',bulanIni)
-   .where('tahun','==',tahunIni)
-   .get();
+  .where('bulan','==',bulanIni)
+  .where('tahun','==',tahunIni)
+  .get();
 
   let count = 0;
   snap.forEach(doc => {
     const t = doc.data();
     const user = allUsers.find(u => u.id === t.uid);
     if(user?.nohp) {
-      kirimWA(user.nohp, user.nama, t.jumlah, bulanIni, tahunIni);
+      kirimWA(user.nohp, user.nama, Number(t.jumlah)||0, bulanIni, tahunIni);
       count++;
     }
   });
@@ -373,17 +383,17 @@ async function kirimTagihanNunggak() {
   const tahunIni = new Date().getFullYear();
 
   const snap = await db.collection('tagihan')
-   .where('bulan','==',bulanIni)
-   .where('tahun','==',tahunIni)
-   .where('status','==','belum')
-   .get();
+  .where('bulan','==',bulanIni)
+  .where('tahun','==',tahunIni)
+  .where('status','==','belum')
+  .get();
 
   let count = 0;
   snap.forEach(doc => {
     const t = doc.data();
     const user = allUsers.find(u => u.id === t.uid);
     if(user?.nohp) {
-      kirimWA(user.nohp, user.nama, t.jumlah, bulanIni, tahunIni);
+      kirimWA(user.nohp, user.nama, Number(t.jumlah)||0, bulanIni, tahunIni);
       count++;
     }
   });
@@ -391,7 +401,6 @@ async function kirimTagihanNunggak() {
   alert(`${count} tab WA untuk yg nunggak kebuka`);
 }
 
-// FITUR BARU: Export JSON
 function exportJSON() {
   const data = allUsers.map(u => ({
     nama: u.nama,
@@ -413,7 +422,6 @@ function exportJSON() {
   URL.revokeObjectURL(url);
 }
 
-// FITUR BARU: Export KML buat Google Earth
 function exportKML() {
   let kml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -447,236 +455,6 @@ function exportKML() {
   URL.revokeObjectURL(url);
 
   alert('File KML ke-download. Buka di Google Earth buat liat peta sebaran pelanggan');
-}
-</script>
-</body>
-</html>      </table>
-    </div>
-  </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDbUE5grCTF86R4Dj7NE_i1Vcmzic67u2U",
-  authDomain: "billing-wbm-net.firebaseapp.com",
-  projectId: "billing-wbm-net",
-  storageBucket: "billing-wbm-net.firebasestorage.app",
-  messagingSenderId: "155140597764",
-  appId: "1:155140597764:web:01318d797f15c85d62ad51"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-let allUsers = [];
-let chartInstance = null;
-
-function showError(msg){
-  const box = document.getElementById('errorBox');
-  box.style.display = 'block';
-  box.innerHTML = `<b>Error:</b> ${msg}<br><small>Kalau muncul "requires an index", klik link biru di console F12 lalu Create Index</small>`;
-}
-
-// Proteksi admin + cek role
-auth.onAuthStateChanged(async user => {
-  if(!user) return window.location.href = 'index.html';
-  try {
-    const token = await user.getIdTokenResult(true);
-    if(!token.claims.admin) {
-      alert('Akses ditolak. Akun ini bukan admin.');
-      return window.location.href = 'index.html';
-    }
-    loadData();
-  } catch(e) {
-    showError('Gagal cek role admin: ' + e.message);
-  }
-});
-
-function logout(){
-  auth.signOut().then(() => window.location.href = 'index.html');
-}
-
-async function loadData(){
-  try {
-    document.getElementById('errorBox').style.display = 'none';
-    const bulanIni = new Date().getMonth() + 1;
-    const tahunIni = new Date().getFullYear();
-
-    // 1. Ambil semua user
-    const snapUsers = await db.collection('users').get();
-    allUsers = [];
-    let totalAktif = 0;
-    
-    snapUsers.forEach(doc => {
-      const d = doc.data();
-      allUsers.push({id: doc.id, ...d});
-      if(d.status === 'aktif') totalAktif++;
-    });
-    
-    document.getElementById('totalPelanggan').innerText = totalAktif;
-    renderPelanggan(allUsers);
-
-    // 2. Ambil tagihan bulan ini - butuh index: bulan+tahun+createdAt
-    const snapTagihan = await db.collection('tagihan')
-      .where('bulan','==',bulanIni)
-      .where('tahun','==',tahunIni)
-      .orderBy('createdAt','desc')
-      .get();
-
-    let totalTagihan = 0, belumBayar = 0, pemasukan = 0;
-    let htmlTagihan = '';
-
-    snapTagihan.forEach(doc => {
-      const t = doc.data();
-      const user = allUsers.find(u => u.id === t.uid);
-      const nama = user?.nama || 'Unknown';
-      const paket = user?.paket || '-';
-      
-      totalTagihan += t.jumlah || 0;
-      if(t.status === 'lunas') pemasukan += t.jumlah || 0;
-      if(t.status === 'belum') belumBayar++;
-
-      const tgl = t.createdAt?.toDate() || new Date();
-      htmlTagihan += `
-        <tr>
-          <td>${tgl.getDate()}/${tgl.getMonth()+1}</td>
-          <td>${nama}</td>
-          <td>${paket}</td>
-          <td>Rp${(t.jumlah || 0).toLocaleString('id-ID')}</td>
-          <td><span class="badge ${t.status}">${t.status}</span></td>
-          <td>
-            ${t.status === 'belum' ? `<button class="btn-small btn-success" onclick="markLunas('${doc.id}')">Lunas</button>` : ''}
-            <button class="btn-small" onclick="kirimWA('${user?.nohp || ''}')">WA</button>
-          </td>
-        </tr>
-      `;
-    });
-
-    document.getElementById('totalTagihan').innerText = 'Rp' + totalTagihan.toLocaleString('id-ID');
-    document.getElementById('belumBayar').innerText = belumBayar;
-    document.getElementById('pemasukan').innerText = 'Rp' + pemasukan.toLocaleString('id-ID');
-    document.getElementById('tabelTagihan').innerHTML = htmlTagihan || '<tr><td colspan="6" class="loading">Belum ada tagihan</td></tr>';
-
-    // 3. Grafik 6 bulan - butuh index: bulan+tahun+status
-    await renderChart();
-
-    // 4. Search pelanggan
-    document.getElementById('searchPelanggan').addEventListener('input', e => {
-      const q = e.target.value.toLowerCase();
-      const filtered = allUsers.filter(u => 
-        u.nama?.toLowerCase().includes(q) || 
-        u.email?.toLowerCase().includes(q) ||
-        u.nohp?.includes(q)
-      );
-      renderPelanggan(filtered);
-    });
-
-  } catch(e) {
-    console.error(e);
-    if(e.code === 'failed-precondition') {
-      showError('Query butuh index. Buka Console F12, klik link biru, lalu Create Index di Firestore.');
-    } else {
-      showError('Gagal load data: ' + e.message);
-    }
-  }
-}
-
-function renderPelanggan(users) {
-  let html = '';
-  users.forEach(d => {
-    const status = d.status || 'aktif';
-    html += `
-      <tr>
-        <td>${d.nama || '-'}</td>
-        <td>${d.paket || '-'}</td>
-        <td><span class="badge ${status}">${status}</span></td>
-        <td><button class="btn-small" onclick="kirimWA('${d.nohp || ''}')">WA</button></td>
-      </tr>
-    `;
-  });
-  document.getElementById('tabelPelanggan').innerHTML = html || '<tr><td colspan="4" class="loading">Data kosong</td></tr>';
-}
-
-async function renderChart() {
-  const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-  
-  // Promise.all biar 6 query jalan bareng, lebih cepet
-  const promises = [];
-  for(let i = 5; i >= 0; i--) {
-    const date = new Date();
-    date.setMonth(date.getMonth() - i);
-    const bulan = date.getMonth() + 1;
-    const tahun = date.getFullYear();
-
-    const p = db.collection('tagihan')
-      .where('bulan','==',bulan)
-      .where('tahun','==',tahun)
-      .where('status','==','lunas')
-      .get().then(snap => {
-        let total = 0;
-        snap.forEach(doc => total += doc.data().jumlah || 0);
-        return {bulan: namaBulan[bulan-1], total};
-      }).catch(err => {
-        console.warn('Chart bulan', bulan, err);
-        return {bulan: namaBulan[bulan-1], total: 0};
-      });
-    promises.push(p);
-  }
-
-  const results = await Promise.all(promises);
-  const labels = results.map(r => r.bulan);
-  const dataPemasukan = results.map(r => r.total);
-
-  const ctx = document.getElementById('chartPemasukan').getContext('2d');
-  if(chartInstance) chartInstance.destroy(); // biar gak numpuk chart
-  
-  chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Pemasukan',
-        data: dataPemasukan,
-        borderColor: '#06b6d4',
-        backgroundColor: 'rgba(6,182,212,0.1)',
-        tension: 0.4,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins:{legend:{display:false}},
-      scales:{
-        y:{ticks:{color:'#94a3b8', callback: v => 'Rp' + v.toLocaleString('id-ID')}}, 
-        x:{ticks:{color:'#94a3b8'}}
-      }
-    }
-  });
-}
-
-async function markLunas(tagihanId) {
-  if(!confirm('Tandai tagihan ini sudah lunas?')) return;
-  try {
-    await db.collection('tagihan').doc(tagihanId).update({
-      status: 'lunas',
-      tanggalBayar: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    alert('Tagihan ditandai lunas');
-    loadData(); // refresh
-  } catch(e) {
-    alert('Gagal: ' + e.message);
-  }
-}
-
-function kirimWA(nohp){
-  if(!nohp) return alert('No HP tidak ada');
-  const no = nohp.startsWith('0') ? '62' + nohp.substring(1) : nohp;
-  const pesan = encodeURIComponent('Halo, ini pengingat tagihan WBM.NET bulan ini. Silakan cek dashboard ya.');
-  window.open(`https://wa.me/${no}?text=${pesan}`, '_blank');
 }
 </script>
 </body>
