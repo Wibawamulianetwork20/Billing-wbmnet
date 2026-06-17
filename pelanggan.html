@@ -120,6 +120,18 @@ const functions = firebase.functions();
 
 let currentUser = null;
 
+  
+import { getMessaging, getToken } from "firebase/messaging";
+
+const messaging = getMessaging();
+Notification.requestPermission().then(perm => {
+  if (perm === 'granted') {
+    getToken(messaging, { vapidKey: 'BEnf38GQeMXYVx4-xTsKeWmqY--nhHX---KU9CKjZXUAQLEKilCEuGTj9lFcEt0O8yPrU9dvbleRhoXQMeND3Pg' }).then(token => {
+      db.collection('users').doc(user.uid).set({ fcmToken: token }, {merge: true});
+    });
+  }
+});
+  
 // CEK LOGIN - KALAU BELUM LOGIN LANGSUNG TENDANG
 auth.onAuthStateChanged(async user => {
   if(!user){
