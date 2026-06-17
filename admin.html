@@ -40,10 +40,12 @@ tr:hover{background:rgba(255,255,255,0.03)}
 .btn-small{padding:8px 14px;background:var(--primary);border:none;border-radius:8px;color:white;font-size:13px;cursor:pointer;font-weight:600;margin-right:6px}
 .btn-small:hover{opacity:0.8}
 .btn-success{background:var(--success)}
+.btn-accent{background:var(--accent)}
 .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:28px}
 @media(max-width:1024px){.grid-2{grid-template-columns:1fr}}
 .loading{color:#94a3b8;text-align:center;padding:20px}
 .error-box{background:rgba(239,68,68,0.1);border:1px solid var(--danger);padding:16px;border-radius:12px;color:#fca5a5;margin-top:12px;font-size:14px}
+.action-bar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -84,6 +86,10 @@ tr:hover{background:rgba(255,255,255,0.03)}
   <div class="grid-2">
     <div class="section">
       <h2>Data Pelanggan</h2>
+      <div class="action-bar">
+        <button class="btn-small btn-accent" onclick="exportJSON()">📥 Export JSON</button>
+        <button class="btn-small btn-accent" onclick="exportKML()">🗺️ Export KML Map</button>
+      </div>
       <input type="text" class="search-box" placeholder="Cari nama, email, no HP..." id="searchPelanggan">
       <div style="overflow-x:auto">
         <table>
@@ -103,6 +109,10 @@ tr:hover{background:rgba(255,255,255,0.03)}
 
   <div class="section">
     <h2>Tagihan Terbaru</h2>
+    <div class="action-bar">
+      <button class="btn-small btn-success" onclick="kirimTagihanMassal()">📤 Kirim Tagihan Bulan Ini</button>
+      <button class="btn-small" onclick="kirimTagihanNunggak()">⚠️ Kirim ke yg Nunggak Saja</button>
+    </div>
     <div style="overflow-x:auto">
       <table>
         <thead>
@@ -110,6 +120,337 @@ tr:hover{background:rgba(255,255,255,0.03)}
         </thead>
         <tbody id="tabelTagihan"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDbUE5grCTF86R4Dj7NE_i1Vcmzic67u2U",
+  authDomain: "billing-wbm-net.firebaseapp.com",
+  projectId: "billing-wbm-net",
+  storageBucket: "billing-wbm-net.firebasestorage.app",
+  messagingSenderId: "155140597764",
+  appId: "1:155140597764:web:01318d797f15c85d62ad51"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let allUsers = [];
+let chartInstance = null;
+
+function showError(msg){
+  const box = document.getElementById('errorBox');
+  box.style.display = 'block';
+  box.innerHTML = `<b>Error:</b> ${msg}<br><small>Kalau muncul "requires an index", klik link biru di console F12 lalu Create Index</small>`;
+}
+
+auth.onAuthStateChanged(async user => {
+  if(!user) return window.location.href = 'index.html';
+  try {
+    const token = await user.getIdTokenResult(true);
+    if(!token.claims.admin) {
+      alert('Akses ditolak. Akun ini bukan admin.');
+      return window.location.href = 'index.html';
+    }
+    loadData();
+  } catch(e) {
+    showError('Gagal cek role admin: ' + e.message);
+  }
+});
+
+function logout(){
+  auth.signOut().then(() => window.location.href = 'index.html');
+}
+
+async function loadData(){
+  try {
+    document.getElementById('errorBox').style.display = 'none';
+    const bulanIni = new Date().getMonth() + 1;
+    const tahunIni = new Date().getFullYear();
+
+    const snapUsers = await db.collection('users').get();
+    allUsers = [];
+    let totalAktif = 0;
+
+    snapUsers.forEach(doc => {
+      const d = doc.data();
+      allUsers.push({id: doc.id,...d});
+      if(d.status === 'aktif') totalAktif++;
+    });
+
+    document.getElementById('totalPelanggan').innerText = totalAktif;
+    renderPelanggan(allUsers);
+
+    const snapTagihan = await db.collection('tagihan')
+     .where('bulan','==',bulanIni)
+     .where('tahun','==',tahunIni)
+     .orderBy('createdAt','desc')
+     .get();
+
+    let totalTagihan = 0, belumBayar = 0, pemasukan = 0;
+    let htmlTagihan = '';
+
+    snapTagihan.forEach(doc => {
+      const t = doc.data();
+      const user = allUsers.find(u => u.id === t.uid);
+      const nama = user?.nama || 'Unknown';
+      const paket = user?.paket || '-';
+
+      totalTagihan += t.jumlah || 0;
+      if(t.status === 'lunas') pemasukan += t.jumlah || 0;
+      if(t.status === 'belum') belumBayar++;
+
+      const tgl = t.createdAt?.toDate() || new Date();
+      htmlTagihan += `
+        <tr>
+          <td>${tgl.getDate()}/${tgl.getMonth()+1}</td>
+          <td>${nama}</td>
+          <td>${paket}</td>
+          <td>Rp${(t.jumlah || 0).toLocaleString('id-ID')}</td>
+          <td><span class="badge ${t.status}">${t.status}</span></td>
+          <td>
+            ${t.status === 'belum'? `<button class="btn-small btn-success" onclick="markLunas('${doc.id}')">Lunas</button>` : ''}
+            <button class="btn-small" onclick="kirimWA('${user?.nohp || ''}','${nama}',${t.jumlah || 0},${bulanIni},${tahunIni})">WA</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    document.getElementById('totalTagihan').innerText = 'Rp' + totalTagihan.toLocaleString('id-ID');
+    document.getElementById('belumBayar').innerText = belumBayar;
+    document.getElementById('pemasukan').innerText = 'Rp' + pemasukan.toLocaleString('id-ID');
+    document.getElementById('tabelTagihan').innerHTML = htmlTagihan || '<tr><td colspan="6" class="loading">Belum ada tagihan</td></tr>';
+
+    await renderChart();
+
+    document.getElementById('searchPelanggan').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      const filtered = allUsers.filter(u =>
+        u.nama?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
+        u.nohp?.includes(q)
+      );
+      renderPelanggan(filtered);
+    });
+
+  } catch(e) {
+    console.error(e);
+    if(e.code === 'failed-precondition') {
+      showError('Query butuh index. Buka Console F12, klik link biru, lalu Create Index di Firestore.');
+    } else {
+      showError('Gagal load data: ' + e.message);
+    }
+  }
+}
+
+function renderPelanggan(users) {
+  let html = '';
+  users.forEach(d => {
+    const status = d.status || 'aktif';
+    html += `
+      <tr>
+        <td>${d.nama || '-'}</td>
+        <td>${d.paket || '-'}</td>
+        <td><span class="badge ${status}">${status}</span></td>
+        <td><button class="btn-small" onclick="kirimWA('${d.nohp || ''}','${d.nama || ''}',0,0,0)">WA</button></td>
+      </tr>
+    `;
+  });
+  document.getElementById('tabelPelanggan').innerHTML = html || '<tr><td colspan="4" class="loading">Data kosong</td></tr>';
+}
+
+async function renderChart() {
+  const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const promises = [];
+
+  for(let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const bulan = date.getMonth() + 1;
+    const tahun = date.getFullYear();
+
+    const p = db.collection('tagihan')
+     .where('bulan','==',bulan)
+     .where('tahun','==',tahun)
+     .where('status','==','lunas')
+     .get().then(snap => {
+        let total = 0;
+        snap.forEach(doc => total += doc.data().jumlah || 0);
+        return {bulan: namaBulan[bulan-1], total};
+      }).catch(() => ({bulan: namaBulan[bulan-1], total: 0}));
+    promises.push(p);
+  }
+
+  const results = await Promise.all(promises);
+  const labels = results.map(r => r.bulan);
+  const dataPemasukan = results.map(r => r.total);
+
+  const ctx = document.getElementById('chartPemasukan').getContext('2d');
+  if(chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Pemasukan',
+        data: dataPemasukan,
+        borderColor: '#06b6d4',
+        backgroundColor: 'rgba(6,182,212,0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{ticks:{color:'#94a3b8', callback: v => 'Rp' + v.toLocaleString('id-ID')}},
+        x:{ticks:{color:'#94a3b8'}}
+      }
+    }
+  });
+}
+
+async function markLunas(tagihanId) {
+  if(!confirm('Tandai tagihan ini sudah lunas?')) return;
+  try {
+    await db.collection('tagihan').doc(tagihanId).update({
+      status: 'lunas',
+      tanggalBayar: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert('Tagihan ditandai lunas');
+    loadData();
+  } catch(e) {
+    alert('Gagal: ' + e.message);
+  }
+}
+
+function kirimWA(nohp, nama, jumlah, bulan, tahun){
+  if(!nohp) return alert('No HP tidak ada');
+  const no = nohp.startsWith('0')? '62' + nohp.substring(1) : nohp;
+  let pesan = `Halo ${nama}, ini pengingat tagihan WBM.NET`;
+  if(jumlah > 0) pesan += ` bulan ${bulan}/${tahun} sebesar Rp${jumlah.toLocaleString('id-ID')}`;
+  pesan += '. Silakan cek dashboard ya.';
+  window.open(`https://wa.me/${no}?text=${encodeURIComponent(pesan)}`, '_blank');
+}
+
+// FITUR BARU: Kirim tagihan massal
+async function kirimTagihanMassal() {
+  if(!confirm('Buka tab WA untuk semua pelanggan bulan ini?')) return;
+
+  const bulanIni = new Date().getMonth() + 1;
+  const tahunIni = new Date().getFullYear();
+
+  const snap = await db.collection('tagihan')
+   .where('bulan','==',bulanIni)
+   .where('tahun','==',tahunIni)
+   .get();
+
+  let count = 0;
+  snap.forEach(doc => {
+    const t = doc.data();
+    const user = allUsers.find(u => u.id === t.uid);
+    if(user?.nohp) {
+      kirimWA(user.nohp, user.nama, t.jumlah, bulanIni, tahunIni);
+      count++;
+    }
+  });
+
+  alert(`${count} tab WA kebuka. Kirim manual di WhatsApp Web ya`);
+}
+
+async function kirimTagihanNunggak() {
+  if(!confirm('Kirim ke pelanggan yg status "belum" saja?')) return;
+
+  const bulanIni = new Date().getMonth() + 1;
+  const tahunIni = new Date().getFullYear();
+
+  const snap = await db.collection('tagihan')
+   .where('bulan','==',bulanIni)
+   .where('tahun','==',tahunIni)
+   .where('status','==','belum')
+   .get();
+
+  let count = 0;
+  snap.forEach(doc => {
+    const t = doc.data();
+    const user = allUsers.find(u => u.id === t.uid);
+    if(user?.nohp) {
+      kirimWA(user.nohp, user.nama, t.jumlah, bulanIni, tahunIni);
+      count++;
+    }
+  });
+
+  alert(`${count} tab WA untuk yg nunggak kebuka`);
+}
+
+// FITUR BARU: Export JSON
+function exportJSON() {
+  const data = allUsers.map(u => ({
+    nama: u.nama,
+    email: u.email,
+    nohp: u.nohp,
+    paket: u.paket,
+    status: u.status,
+    alamat: u.alamat || '',
+    lat: u.lat || '',
+    lng: u.lng || ''
+  }));
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pelanggan-wbm-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// FITUR BARU: Export KML buat Google Earth
+function exportKML() {
+  let kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+<name>Pelanggan WBM.NET</name>
+<description>Titik pelanggan internet WBM.NET Cibarusah</description>`;
+
+  allUsers.forEach(u => {
+    if(u.lat && u.lng) {
+      kml += `
+<Placemark>
+  <name>${u.nama || 'Tanpa Nama'}</name>
+  <description>Paket: ${u.paket || '-'} | HP: ${u.nohp || '-'} | Status: ${u.status || '-'}</description>
+  <Point>
+    <coordinates>${u.lng},${u.lat},0</coordinates>
+  </Point>
+</Placemark>`;
+    }
+  });
+
+  kml += `
+</Document>
+</kml>`;
+
+  const blob = new Blob([kml], {type: 'application/vnd.google-earth.kml+xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pelanggan-wbm.kml`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  alert('File KML ke-download. Buka di Google Earth buat liat peta sebaran pelanggan');
+}
+</script>
+</body>
+</html>      </table>
     </div>
   </div>
 </div>
