@@ -43,6 +43,7 @@ tr:hover{background:rgba(255,255,255,0.03)}
 .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:28px}
 @media(max-width:1024px){.grid-2{grid-template-columns:1fr}}
 .loading{color:#94a3b8;text-align:center;padding:20px}
+.error-box{background:rgba(239,68,68,0.1);border:1px solid var(--danger);padding:16px;border-radius:12px;color:#fca5a5;margin-top:12px;font-size:14px}
 </style>
 </head>
 <body>
@@ -58,6 +59,8 @@ tr:hover{background:rgba(255,255,255,0.03)}
 <div class="container">
   <h1>Dashboard</h1>
   <p class="subtitle">Ringkasan bisnis WBM.NET Cibarusah</p>
+
+  <div id="errorBox" class="error-box" style="display:none"></div>
 
   <div class="stats-grid">
     <div class="stat-card">
@@ -128,16 +131,27 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 let allUsers = [];
+let chartInstance = null;
+
+function showError(msg){
+  const box = document.getElementById('errorBox');
+  box.style.display = 'block';
+  box.innerHTML = `<b>Error:</b> ${msg}<br><small>Kalau muncul "requires an index", klik link biru di console F12 lalu Create Index</small>`;
+}
 
 // Proteksi admin + cek role
 auth.onAuthStateChanged(async user => {
   if(!user) return window.location.href = 'index.html';
-  const token = await user.getIdTokenResult(true);
-  if(!token.claims.admin) {
-    alert('Akses ditolak. Akun ini bukan admin.');
-    return window.location.href = 'index.html';
+  try {
+    const token = await user.getIdTokenResult(true);
+    if(!token.claims.admin) {
+      alert('Akses ditolak. Akun ini bukan admin.');
+      return window.location.href = 'index.html';
+    }
+    loadData();
+  } catch(e) {
+    showError('Gagal cek role admin: ' + e.message);
   }
-  loadData();
 });
 
 function logout(){
@@ -146,6 +160,7 @@ function logout(){
 
 async function loadData(){
   try {
+    document.getElementById('errorBox').style.display = 'none';
     const bulanIni = new Date().getMonth() + 1;
     const tahunIni = new Date().getFullYear();
 
@@ -163,7 +178,7 @@ async function loadData(){
     document.getElementById('totalPelanggan').innerText = totalAktif;
     renderPelanggan(allUsers);
 
-    // 2. Ambil tagihan bulan ini
+    // 2. Ambil tagihan bulan ini - butuh index: bulan+tahun+createdAt
     const snapTagihan = await db.collection('tagihan')
       .where('bulan','==',bulanIni)
       .where('tahun','==',tahunIni)
@@ -189,11 +204,11 @@ async function loadData(){
           <td>${tgl.getDate()}/${tgl.getMonth()+1}</td>
           <td>${nama}</td>
           <td>${paket}</td>
-          <td>Rp${t.jumlah.toLocaleString('id-ID')}</td>
+          <td>Rp${(t.jumlah || 0).toLocaleString('id-ID')}</td>
           <td><span class="badge ${t.status}">${t.status}</span></td>
           <td>
             ${t.status === 'belum' ? `<button class="btn-small btn-success" onclick="markLunas('${doc.id}')">Lunas</button>` : ''}
-            <button class="btn-small" onclick="kirimWA('${user?.nohp}')">WA</button>
+            <button class="btn-small" onclick="kirimWA('${user?.nohp || ''}')">WA</button>
           </td>
         </tr>
       `;
@@ -204,8 +219,8 @@ async function loadData(){
     document.getElementById('pemasukan').innerText = 'Rp' + pemasukan.toLocaleString('id-ID');
     document.getElementById('tabelTagihan').innerHTML = htmlTagihan || '<tr><td colspan="6" class="loading">Belum ada tagihan</td></tr>';
 
-    // 3. Grafik 6 bulan
-    renderChart();
+    // 3. Grafik 6 bulan - butuh index: bulan+tahun+status
+    await renderChart();
 
     // 4. Search pelanggan
     document.getElementById('searchPelanggan').addEventListener('input', e => {
@@ -220,7 +235,11 @@ async function loadData(){
 
   } catch(e) {
     console.error(e);
-    alert('Gagal load data: ' + e.message);
+    if(e.code === 'failed-precondition') {
+      showError('Query butuh index. Buka Console F12, klik link biru, lalu Create Index di Firestore.');
+    } else {
+      showError('Gagal load data: ' + e.message);
+    }
   }
 }
 
@@ -233,7 +252,7 @@ function renderPelanggan(users) {
         <td>${d.nama || '-'}</td>
         <td>${d.paket || '-'}</td>
         <td><span class="badge ${status}">${status}</span></td>
-        <td><button class="btn-small" onclick="kirimWA('${d.nohp}')">WA</button></td>
+        <td><button class="btn-small" onclick="kirimWA('${d.nohp || ''}')">WA</button></td>
       </tr>
     `;
   });
@@ -241,30 +260,39 @@ function renderPelanggan(users) {
 }
 
 async function renderChart() {
-  const labels = [];
-  const dataPemasukan = [];
   const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
   
+  // Promise.all biar 6 query jalan bareng, lebih cepet
+  const promises = [];
   for(let i = 5; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
     const bulan = date.getMonth() + 1;
     const tahun = date.getFullYear();
-    labels.push(namaBulan[bulan-1]);
 
-    const snap = await db.collection('tagihan')
+    const p = db.collection('tagihan')
       .where('bulan','==',bulan)
       .where('tahun','==',tahun)
       .where('status','==','lunas')
-      .get();
-    
-    let total = 0;
-    snap.forEach(doc => total += doc.data().jumlah || 0);
-    dataPemasukan.push(total);
+      .get().then(snap => {
+        let total = 0;
+        snap.forEach(doc => total += doc.data().jumlah || 0);
+        return {bulan: namaBulan[bulan-1], total};
+      }).catch(err => {
+        console.warn('Chart bulan', bulan, err);
+        return {bulan: namaBulan[bulan-1], total: 0};
+      });
+    promises.push(p);
   }
 
+  const results = await Promise.all(promises);
+  const labels = results.map(r => r.bulan);
+  const dataPemasukan = results.map(r => r.total);
+
   const ctx = document.getElementById('chartPemasukan').getContext('2d');
-  new Chart(ctx, {
+  if(chartInstance) chartInstance.destroy(); // biar gak numpuk chart
+  
+  chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels: labels,
@@ -278,6 +306,8 @@ async function renderChart() {
       }]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
       plugins:{legend:{display:false}},
       scales:{
         y:{ticks:{color:'#94a3b8', callback: v => 'Rp' + v.toLocaleString('id-ID')}}, 
