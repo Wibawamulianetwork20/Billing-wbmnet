@@ -1,99 +1,277 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pelanggan - PWA</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#2196F3">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - WBM.NET</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+
+<style>
+:root{--primary:#4f46e5;--accent:#06b6d4;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#090a0f;color:white;min-height:100vh}
+nav{position:sticky;top:0;background:rgba(10,14,26,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.1);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;z-index:10}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800;font-size:20px}
+.logo img{width:28px;filter:brightness(0) invert(1)}
+.btn-logout{padding:10px 18px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:white;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+.container{max-width:1000px;margin:0 auto;padding:40px 24px}
+.welcome h1{font-size:28px;margin-bottom:6px}
+.welcome p{color:#94a3b8;margin-bottom:32px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}}
+.card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);padding:28px;border-radius:20px;backdrop-filter:blur(16px)}
+.card h3{font-size:16px;color:#94a3b8;margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.info-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+.info-row:last-child{border:none}
+.info-label{color:#94a3b8;font-size:14px}
+.info-value{font-weight:600;font-size:15px}
+.status-badge{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;display:inline-block}
+.status-aktif{background:rgba(34,197,94,0.2);color:var(--success)}
+.status-nunggak{background:rgba(239,68,68,0.2);color:var(--danger)}
+.status-belum{background:rgba(245,158,11,0.2);color:var(--warning)}
+.big-price{font-size:42px;font-weight:800;background:linear-gradient(135deg,#a78bfa,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:12px 0}
+.big-price span{font-size:16px;color:#94a3b8}
+.btn{padding:14px 24px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:12px;color:white;font-weight:700;font-size:15px;cursor:pointer;width:100%;transition:0.3s;margin-top:16px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(79,70,229,0.4)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:500px}
+th{text-align:left;padding:14px;color:#94a3b8;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.1)}
+td{padding:16px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:14px}
+tr:hover{background:rgba(255,255,255,0.03)}
+.empty{text-align:center;padding:40px;color:#64748b}
+.empty-icon{font-size:48px;margin-bottom:12px}
+</style>
 </head>
 <body>
-  <h1>Halo <span id="namaUser"></span></h1>
-  <button id="btnLogout" type="button">Logout</button>
 
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+<nav>
+  <div class="logo">
+    <img src="/icon-192.png" alt="logo">
+    WBM.NET
+  </div>
+  <button class="btn-logout" id="btnLogout">Logout</button>
+</nav>
 
-  // === GANTI SESUAI PROJECT KAMU ===
-  const firebaseConfig = {
-    apiKey: "AIzaSyDbUE5grCTF86R4Dj7NE_i1Vcmzic67u2U",
+<div class="container">
+  <div class="welcome">
+    <h1>Halo, <span id="namaPelanggan">...</span> 👋</h1>
+    <p>Selamat datang di dashboard WBM.NET</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Informasi Akun</h3>
+      <div class="info-row"><span class="info-label">Nama</span><span class="info-value" id="infoNama">-</span></div>
+      <div class="info-row"><span class="info-label">Email</span><span class="info-value" id="infoEmail">-</span></div>
+      <div class="info-row"><span class="info-label">No WhatsApp</span><span class="info-value" id="infoHP">-</span></div>
+      <div class="info-row"><span class="info-label">Status</span><span class="info-value"><span class="status-badge status-aktif" id="statusAkun">Loading</span></span></div>
+    </div>
+
+    <div class="card">
+      <h3>Paket & Tagihan Bulan Ini</h3>
+      <div style="text-align:center">
+        <div class="info-label">Paket Aktif</div>
+        <div style="font-size:24px;font-weight:700;margin:8px 0" id="paketAktif">-</div>
+        <div class="big-price" id="hargaTagihan">Rp0<span>/bulan</span></div>
+        <div style="margin:16px 0">
+          <div class="info-label">Status Tagihan</div>
+          <span class="status-badge status-belum" id="statusTagihan">Loading</span>
+        </div>
+        <button class="btn" id="btnBayar" onclick="bayarTagihan()">Bayar Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Riwayat Pembayaran</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Bulan</th><th>Tanggal Bayar</th><th>Jumlah</th><th>Status</th></tr></thead>
+        <tbody id="tabelRiwayat"><tr><td colspan="4" class="empty"><div class="empty-icon">⏳</div>Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:rgba(59,130,246,0.1);border-left:3px solid var(--accent);padding:14px;border-radius:10px;margin-top:24px">
+    <p style="font-size:13px;color:#a5b4fc">ℹ️ Tagihan jatuh tempo setiap tanggal 1. Keterlambatan >7 hari dapat menyebabkan pemutusan sementara.</p>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDbUE5grCTF86R4Dj7NE_i1Vcmzic67u2U",
   authDomain: "billing-wbm-net.firebaseapp.com",
   projectId: "billing-wbm-net",
   storageBucket: "billing-wbm-net.firebasestorage.app",
   messagingSenderId: "155140597764",
   appId: "1:155140597764:web:01318d797f15c85d62ad51"
-  };
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const functions = firebase.functions();
+const messaging = firebase.messaging();
 
-  const VAPID_KEY = 'BEnf38GQeMXYVx4-xTsKeWmqY--nhHX---KU9CKjZXUAQLEKilCEuGTj9lFcEt0O8yPrU9dvbleRhoXQMeND3Pg';
-  // ==================================
+const VAPID_KEY = 'BEnf38GQeMXYVx4-xTsKeWmqY--nhHX---KU9CKjZXUAQLEKilCEuGTj9lFcEt0O8yPrU9dvbleRhoXQMeND3Pg';
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const messaging = getMessaging(app);
+let currentUser = null;
 
-  // 1. Cek login + ambil FCM token
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      document.getElementById('namaUser').textContent = user.displayName || user.email;
-      console.log('User login:', user.uid);
-      
-      const perm = await Notification.requestPermission();
-      
-      if (perm === 'granted') {
-        try {
-          const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-          console.log('Token FCM:', token);
-          
-          await setDoc(doc(db, 'users', user.uid), { 
-            fcmToken: token,
-            updatedAt: new Date()
-          }, { merge: true });
-          
-          console.log('Token tersimpan ke Firestore ✅');
-        } catch (err) {
-          console.error('Gagal ambil token:', err);
+// Register Service Worker untuk notif background
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/firebase-messaging-sw.js');
+}
+
+// CEK LOGIN + AMBIL FCM TOKEN
+auth.onAuthStateChanged(async user => {
+  if(!user){
+    window.location.href = 'index.html';
+    return;
+  }
+  currentUser = user;
+
+  // Ambil & simpan token FCM
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      messaging.getToken({ vapidKey: VAPID_KEY }).then(token => {
+        if (token) {
+          db.collection('users').doc(user.uid).set({ fcmToken: token }, {merge: true});
+          console.log('FCM Token tersimpan ✅');
         }
-      } else {
-        console.warn('Izin notifikasi ditolak ❌');
-      }
-    } else {
-      console.log('User logout');
-      window.location.href = '/login.html';
+      }).catch(err => console.error('Gagal ambil token:', err));
     }
   });
 
-  // 2. Tangkap notif saat PWA dibuka
-  onMessage(messaging, (payload) => {
+  // Notif saat app dibuka
+  messaging.onMessage(payload => {
     alert(payload.notification.title + '\n' + payload.notification.body);
   });
 
-  // 3. Tombol logout + hapus token FCM
-  document.addEventListener('DOMContentLoaded', () => {
-    const btnLogout = document.getElementById('btnLogout');
-    
-    btnLogout.addEventListener('click', async () => {
-      const user = auth.currentUser;
-      
-      try {
-        if (user) {
-          await setDoc(doc(db, 'users', user.uid), { 
-            fcmToken: deleteField() 
-          }, { merge: true });
-          console.log('Token FCM dihapus');
-        }
-        
-        await signOut(auth);
-        console.log('Logout berhasil');
-      } catch (error) {
-        console.error('Logout error:', error);
-        alert('Gagal logout: ' + error.message);
+  await loadDashboard(user.uid);
+});
+
+async function loadDashboard(uid){
+  try {
+    const userDoc = await db.collection('users').doc(uid).get();
+    if(!userDoc.exists) {
+      alert('Data akun tidak ditemukan. Hubungi admin.');
+      return;
+    }
+
+    const data = userDoc.data();
+    document.getElementById('namaPelanggan').innerText = data.nama?.split(' ')[0] || 'Pelanggan';
+    document.getElementById('infoNama').innerText = data.nama || '-';
+    document.getElementById('infoEmail').innerText = data.email || '-';
+    document.getElementById('infoHP').innerText = data.nohp || '-';
+    document.getElementById('paketAktif').innerText = data.paket || 'Belum ada paket';
+
+    const harga = data.hargaPaket || 0;
+    document.getElementById('hargaTagihan').innerHTML = `Rp${harga.toLocaleString('id-ID')}<span>/bulan</span>`;
+
+    const bulanIni = new Date().getMonth() + 1;
+    const tahunIni = new Date().getFullYear();
+    const tagihanRef = db.collection('tagihan').where('uid','==',uid).where('bulan','==',bulanIni).where('tahun','==',tahunIni);
+    const snapTagihan = await tagihanRef.get();
+
+    if(!snapTagihan.empty){
+      const tagihan = snapTagihan.docs[0].data();
+      if(tagihan.status === 'lunas'){
+        document.getElementById('statusTagihan').innerText = 'Lunas';
+        document.getElementById('statusTagihan').className = 'status-badge status-aktif';
+        document.getElementById('btnBayar').style.display = 'none';
+      } else {
+        document.getElementById('statusTagihan').innerText = 'Belum Bayar';
+        document.getElementById('statusTagihan').className = 'status-badge status-belum';
       }
+    } else {
+      document.getElementById('statusTagihan').innerText = 'Belum ada tagihan';
+      document.getElementById('statusTagihan').className = 'status-badge status-belum';
+      document.getElementById('btnBayar').style.display = 'none';
+    }
+
+    const status = data.status || 'aktif';
+    const statusEl = document.getElementById('statusAkun');
+    statusEl.innerText = status.charAt(0).toUpperCase() + status.slice(1);
+    statusEl.className = `status-badge status-${status}`;
+
+    await loadRiwayat(uid);
+  } catch(e) {
+    console.error(e);
+    alert('Gagal load data: ' + e.message);
+  }
+}
+
+async function loadRiwayat(uid){
+  try {
+    const snap = await db.collection('tagihan').where('uid','==',uid).where('status','==','lunas').orderBy('tanggalBayar','desc').limit(6).get();
+
+    if(snap.empty) {
+      document.getElementById('tabelRiwayat').innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-icon">📄</div>Belum ada riwayat pembayaran</td></tr>`;
+      return;
+    }
+
+    let html = '';
+    const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+    snap.forEach(doc => {
+      const d = doc.data();
+      const tgl = d.tanggalBayar.toDate();
+      html += `
+        <tr>
+          <td>${namaBulan[d.bulan-1]} ${d.tahun}</td>
+          <td>${tgl.getDate()} ${namaBulan[tgl.getMonth()]} ${tgl.getFullYear()}</td>
+          <td>Rp${d.jumlah.toLocaleString('id-ID')}</td>
+          <td><span class="status-badge status-aktif">Lunas</span></td>
+        </tr>
+      `;
     });
-  });
-  </script>
+
+    document.getElementById('tabelRiwayat').innerHTML = html;
+  } catch(e) {
+    document.getElementById('tabelRiwayat').innerHTML = `<tr><td colspan="4" class="empty">Gagal load riwayat</td></tr>`;
+  }
+}
+
+async function bayarTagihan(){
+  const btn = document.getElementById('btnBayar');
+  btn.disabled = true;
+  btn.innerText = 'Memproses...';
+
+  try {
+    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+    const harga = userDoc.data().hargaPaket || 170000;
+    const paket = userDoc.data().paket || '7 Mbps';
+
+    const createInvoice = functions.httpsCallable('createTripayInvoice');
+    const result = await createInvoice({
+      amount: harga,
+      product: 'Tagihan ' + paket,
+      method: 'QRIS',
+      customer_note: paket + ' Bulan ' + new Date().toLocaleDateString('id-ID', {month:'long', year:'numeric'})
+    });
+    window.location.href = result.data.checkout_url;
+  } catch(err){
+    alert('Gagal: ' + err.message);
+    console.error(err);
+    btn.disabled = false;
+    btn.innerText = 'Bayar Sekarang';
+  }
+}
+
+// LOGOUT + HAPUS TOKEN FCM
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  if(currentUser){
+    await db.collection('users').doc(currentUser.uid).update({ fcmToken: firebase.firestore.FieldValue.delete() });
+  }
+  auth.signOut().then(() => window.location.href = 'index.html');
+});
+</script>
 </body>
 </html>
