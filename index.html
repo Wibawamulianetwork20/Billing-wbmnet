@@ -4,135 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WBM.NET - Internet RT-RW Net Cibarusah</title>
-<meta name="description" content="Internet RT-RW Net Depok. Paket 5Mbps 150rb, 7Mbps 170rb, 10Mbps 200rb. Router Dual Band EPON.">
-
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon-192.png">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --primary:#4f46e5;
-  --primary-dark:#4338ca;
-  --accent:#06b6d4;
-  --dark:#0f172a;
-  --gray:#64748b;
-  --light:#f8fafc;
-  --border:#e2e8f0;
-  --success:#22c55e;
-  --glass:rgba(255,255,255,0.08);
-}
+:root{--primary:#4f46e5;--accent:#06b6d4;--success:#22c55e;--danger:#ef4444;--glass:rgba(255,255,255,0.08)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Plus Jakarta Sans',sans-serif;line-height:1.6;color:white;background:#090a0f;overflow-x:hidden;padding-top:80px}
-
-/* BACKGROUND BINTANG JATUH */
-#stars{
-  position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;
-  background:radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-}
-
+#stars{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%)}
 .container{max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
-
-/* NAV RAPih */
-nav{
-  position:fixed;top:0;left:0;width:100%;
-  background:rgba(10,14,26,0.7);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  z-index:100;transition:all 0.3s ease
-}
-nav.scrolled{
-  background:rgba(10,14,26,0.95);
-  box-shadow:0 8px 32px rgba(0,0,0,0.3);
-  border-bottom:1px solid rgba(255,255,255,0.15)
-}
+nav{position:fixed;top:0;left:0;width:100%;background:rgba(10,14,26,0.7);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.08);z-index:100;transition:all 0.3s ease}
+nav.scrolled{background:rgba(10,14,26,0.95);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
 .nav-wrap{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* jarak logo sama teks */
-  font-weight: 700;
-  font-size: 20px;
-  text-decoration: none;
-  color: #1e40af; /* warna biru WBM */
-}
-
-.logo-img {
-  width: 28px; /* ukuran logo, kecil aja */
-  height: 28px;
-  object-fit: contain;
-}
-.logo:hover{filter:drop-shadow(0 0 20px rgba(167,139,250,0.5));transform:scale(1.05)}
-.nav-links{display:flex;gap:40px;list-style:none}
-.nav-links a{
-  color:#e2e8f0;text-decoration:none;font-weight:600;font-size:15px;
-  position:relative;padding:8px 0;transition:0.3s;opacity:0.7
-}
-.nav-links a:after{
-  content:'';position:absolute;bottom:0;left:0;width:0;height:2px;
-  background:linear-gradient(90deg,var(--primary),var(--accent));
-  transition:width 0.3s ease;border-radius:2px
-}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;text-decoration:none;color:white}
+.logo-img{width:32px;height:32px;filter:brightness(0) invert(1)}
+.nav-links{display:flex;gap:32px;list-style:none;align-items:center}
+.nav-links a{color:#e2e8f0;text-decoration:none;font-weight:600;font-size:15px;opacity:0.7;transition:0.3s}
 .nav-links a:hover{opacity:1;color:white}
-.nav-links a:hover:after{width:100%}
-
+.btn-nav{padding:10px 20px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:10px;color:white;font-weight:700;font-size:14px;text-decoration:none;border:none;cursor:pointer}
+.btn-logout{background:transparent;border:1px solid var(--danger);color:var(--danger);padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
 .menu-toggle{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none}
 .menu-toggle span{width:24px;height:2px;background:white;border-radius:2px;transition:0.3s}
-.menu-toggle.active span:nth-child(1){transform:rotate(45deg) translate(7px,7px)}
-.menu-toggle.active span:nth-child(2){opacity:0}
-.menu-toggle.active span:nth-child(3){transform:rotate(-45deg) translate(7px,-7px)}
-
 @media(max-width:768px){
-  .nav-links{
-    position:fixed;top:72px;right:-100%;width:70%;height:calc(100vh - 72px);
-    background:rgba(10,14,26,0.98);backdrop-filter:blur(20px);
-    flex-direction:column;padding:40px 24px;gap:24px;
-    border-left:1px solid rgba(255,255,255,0.1);transition:0.4s cubic-bezier(0.4,0,0.2,1)
-  }
+  .nav-links{position:fixed;top:72px;right:-100%;width:70%;height:calc(100vh - 72px);background:rgba(10,14,26,0.98);backdrop-filter:blur(20px);flex-direction:column;padding:40px 24px;gap:24px;border-left:1px solid rgba(255,255,255,0.1);transition:0.4s}
   .nav-links.active{right:0}
   .menu-toggle{display:flex}
-  .nav-links a{font-size:18px;padding:12px 0}
-}
-
-.hero{padding:100px 0 80px}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);z-index:999;display:none;align-items:center;justify-content:center}
+.modal-box{background:#0f172a;border:1px solid rgba(255,255,255,0.1);padding:40px;border-radius:20px;width:90%;max-width:380px;position:relative}
+.modal-close{position:absolute;top:15px;right:15px;background:none;border:none;color:#94a3b8;font-size:28px;cursor:pointer}
+.modal input{width:100%;padding:14px;border:1px solid rgba(255,255,255,0.2);border-radius:10px;background:rgba(255,255,255,0.05);color:white;margin-bottom:12px;font-size:15px}
+.modal input:focus{outline:none;border-color:var(--accent)}
+.hero{padding:100px 0 80px;text-align:center}
 .hero h1{font-size:64px;font-weight:800;line-height:1.1;margin-bottom:24px;letter-spacing:-2px}
-.hero h1 span{
-  background:linear-gradient(90deg,#a78bfa,#22d3ee,#a78bfa);
-  background-size:200% 100%;
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  animation:gradientMove 3s ease infinite
-}
+.hero h1 span{background:linear-gradient(90deg,#a78bfa,#22d3ee,#a78bfa);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientMove 3s ease infinite}
 @keyframes gradientMove{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-.hero p{font-size:20px;color:#cbd5e1;margin-bottom:40px;max-width:580px}
-
-.btn{display:inline-block;padding:20px 40px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;text-decoration:none;border-radius:16px;font-weight:700;font-size:17px;box-shadow:0 8px 25px rgba(79,70,229,0.4);position:relative;overflow:hidden;transition:0.3s;border:none;cursor:pointer}
-.btn:after{
-  content:'';position:absolute;top:-50%;left:-60%;width:20%;height:200%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);
-  transform:rotate(25deg);animation:shimmer 3s infinite
-}
-@keyframes shimmer{0%{left:-60%}100%{left:160%}}
+.hero p{font-size:20px;color:#cbd5e1;margin-bottom:40px;max-width:580px;margin:0 auto 40px}
+.btn{display:inline-block;padding:20px 40px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;text-decoration:none;border-radius:16px;font-weight:700;font-size:17px;box-shadow:0 8px 25px rgba(79,70,229,0.4);transition:0.3s;border:none;cursor:pointer}
 .btn:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(79,70,229,0.6)}
-
+.btn-secondary{background:transparent;border:1px solid rgba(255,255,255,0.3)}
 section{padding:100px 0}
 .section-head{text-align:center;margin-bottom:70px}
 .section-head h2{font-size:44px;font-weight:800;margin-bottom:16px}
 .subtitle{font-size:18px;color:#94a3b8}
-
-.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px;perspective:1000px}
-.paket{
-  background:var(--glass);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:40px;
-  position:relative;transition:0.4s cubic-bezier(0.4,0,0.2,1);
-  transform-style:preserve-3d
-}
-.paket:hover{
-  border-color:var(--accent);
-  transform:translateY(-8px) rotateX(3deg) rotateY(-2deg);
-  box-shadow:0 25px 50px rgba(6,182,212,0.25)
-}
-.paket.popular{border:2px solid var(--accent)}
+.info-box{background:rgba(59,130,246,0.1);border-left:3px solid var(--accent);padding:12px 14px;border-radius:10px;margin:12px auto 0;max-width:600px}
+.info-box p{font-size:12px;color:#a5b4fc}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px}
+.paket{background:var(--glass);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:40px;position:relative;transition:0.4s}
+.paket:hover{border-color:var(--accent);transform:translateY(-8px);box-shadow:0 25px 50px rgba(6,182,212,0.25)}
+.paket.popular{border:2px solid var(--accent);box-shadow:0 0 40px rgba(6,182,212,0.3)}
 .badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700}
 .paket h3{font-size:28px;margin-bottom:20px}
 .harga{font-size:45px;font-weight:800;background:linear-gradient(135deg,#a78bfa,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:24px}
@@ -141,30 +64,14 @@ section{padding:100px 0}
 .paket li{padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#cbd5e1}
 .paket li:last-child{border:none}
 .paket li:before{content:"✓";color:var(--success);font-weight:800;margin-right:8px}
-
 .note{font-size:12px;color:#94a3b8;text-align:center;margin-top:20px}
 .gray{background:rgba(255,255,255,0.02)}
-
-.card{background:var(--glass);border:1px solid rgba(255,255,255,0.1);padding:32px;border-radius:20px;transition:0.3s}
-.card:hover{border-color:var(--accent);transform:translateY(-4px)}
-
-.calculator{background:rgba(79,70,229,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:28px;padding:40px;margin-top:60px}
-.calculator h3{font-size:26px;font-weight:800;margin-bottom:8px;text-align:center}
-.calculator select,.calculator input{width:100%;padding:16px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;font-size:16px;background:rgba(255,255,255,0.05);color:white}
-.hasil-box{background:rgba(255,255,255,0.05);padding:32px;border-radius:20px;text-align:center;border:1px solid var(--accent)}
-.hasil-angka{font-size:48px;font-weight:800;background:linear-gradient(135deg,#a78bfa,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:16px 0}
-
-.timeline{display:flex;justify-content:center;gap:16px;margin-top:20px;flex-wrap:wrap}
-.timeline-item{background:rgba(255,255,255,0.05);padding:14px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);font-size:14px}
-.timeline-item.active{border-color:var(--accent);background:rgba(6,182,212,0.15)}
-
+.card{background:var(--glass);border:1px solid rgba(255,255,255,0.1);padding:32px;border-radius:20px}
 footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1px solid rgba(255,255,255,0.1)}
-
-@media(max-width:768px){
-  body{padding-top:72px}
-  .hero h1{font-size:40px}
-  .paket:hover{transform:translateY(-4px)}
-  .grid-3{perspective:none}
+.footer-links{display:flex;gap:24px;justify-content:center;margin:20px 0;flex-wrap:wrap}
+.footer-links a{color:#64748b;text-decoration:none;font-size:14px}
+.footer-links a:hover{color:var(--accent)}
+@media(max-width:768px){body{padding-top:72px}.hero h1{font-size:40px;letter-spacing:-1px}}
 </style>
 </head>
 <body>
@@ -175,23 +82,36 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
   <div class="container">
     <div class="nav-wrap">
       <a href="#" class="logo">
-        <img src="icon-192.png" alt="WBM Logo" class="logo-img">
+        <img src="/icon-192.png" alt="WBM Logo" class="logo-img">
         WBM.NET
       </a>
       <ul class="nav-links" id="navMenu">
         <li><a href="#paket">Paket</a></li>
         <li><a href="#cara">Cara Daftar</a></li>
         <li><a href="#faq">FAQ</a></li>
-        <li><a href="https://wa.me/6285817230536">CS WhatsApp</a></li>
+        <li><a href="https://wa.me/6285817230536" target="_blank">CS WhatsApp</a></li>
+        <li id="navAuth"><button onclick="bukaModal()" class="btn-nav">Login</button></li>
       </ul>
       <button class="menu-toggle" id="menuBtn">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 </nav>
+
+<div id="modalLogin" class="modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="tutupModal()">×</button>
+    <h3 style="text-align:center;margin-bottom:24px;font-size:24px">Login Akun</h3>
+    <input type="email" id="loginEmail" placeholder="Email" required>
+    <input type="password" id="loginPass" placeholder="Password" required>
+    <button onclick="prosesLogin()" class="btn" style="width:100%;padding:14px">Masuk</button>
+    <p style="text-align:center;margin-top:16px;font-size:14px;color:#94a3b8">
+      Belum punya akun? <a href="register.html" style="color:var(--accent);text-decoration:none;font-weight:600">Daftar di sini</a>
+    </p>
+    <p id="errorLogin" style="color:var(--danger);font-size:13px;text-align:center;margin-top:10px;display:none"></p>
+  </div>
+</div>
 
 <section class="hero">
   <div class="container">
@@ -204,16 +124,12 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
 <section id="paket" class="gray">
   <div class="container">
     <div class="section-head">
-  <h2>Pilih Paket</h2>
-  <p class="subtitle">Mulai Rp300.000. Wifi anda langsung terkoneksi</p>
-  
-  <div class="bg-blue-50 border-blue-200 rounded-lg p-2 mt-2">
-    <p class="text-xs text-blue-800 leading-relaxed">
-      ℹ️ Kecepatan internet dibagi ke seluruh perangkat yang digunakan secara bersamaan. 
-      Pengalaman penggunaan dapat berbeda tergantung jumlah perangkat aktif dan jenis aktivitas online.
-    </p>
-  </div>
-</div>
+      <h2>Pilih Paket</h2>
+      <p class="subtitle">Mulai Rp150.000/bulan. Bayar instalasi Rp300.000 di awal</p>
+      <div class="info-box">
+        <p>ℹ️ Kecepatan dibagi ke seluruh perangkat. Pengalaman tergantung jumlah device & aktivitas online.</p>
+      </div>
+    </div>
     
     <div class="grid-3">
       <div class="paket">
@@ -225,7 +141,7 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
           <li>Kabel Fiber Optik + Teknisi</li>
           <li>Untuk 1-2 perangkat</li>
         </ul>
-        <button id="btn-5Mbps" onclick="bayarInstalasi('5Mbps', 150000)" class="btn" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.3)">Daftar Sekarang</button>
+        <button id="btn-5Mbps" onclick="bayarInstalasi('5Mbps', 150000)" class="btn btn-secondary" style="width:100%">Bayar & Pasang</button>
       </div>
       
       <div class="paket popular">
@@ -238,7 +154,7 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
           <li>Kabel Fiber Optik + Teknisi</li>
           <li>Untuk 3-5 perangkat</li>
         </ul>
-        <button id="btn-7Mbps" onclick="bayarInstalasi('7Mbps', 170000)" class="btn" style="width:100%">Daftar Sekarang</button>
+        <button id="btn-7Mbps" onclick="bayarInstalasi('7Mbps', 170000)" class="btn" style="width:100%">Bayar & Pasang</button>
       </div>
       
       <div class="paket">
@@ -250,42 +166,10 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
           <li>Kabel Fiber Optik + Teknisi</li>
           <li>Untuk 5-8 perangkat</li>
         </ul>
-        <button id="btn-10Mbps" onclick="bayarInstalasi('10Mbps', 200000)" class="btn" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.3)">Daftar Sekarang</button>
+        <button id="btn-10Mbps" onclick="bayarInstalasi('10Mbps', 200000)" class="btn btn-secondary" style="width:100%">Bayar & Pasang</button>
       </div>
     </div>
-
     <p class="note">Router dipinjamkan selama berlangganan</p>
-
-    <div class="calculator">
-      <h3>Simulasi Tagihan</h3>
-      <p style="text-align:center; color:#94a3b8; font-size:15px; margin-bottom:28px">Pasang tanggal 26-30 bebas biaya tambahan bulan pertama</p>
-      
-      <div style="display:grid; gap:16px; max-width:500px; margin:0 auto">
-        <select id="selectPaket">
-          <option value="150000">5 Mbps - Rp150.000</option>
-          <option value="170000" selected>7 Mbps - Rp170.000</option>
-          <option value="200000">10 Mbps - Rp200.000</option>
-        </select>
-        
-        <input type="date" id="inputTanggal">
-        
-        <button onclick="hitungProrate()" class="btn" style="width:100%">Hitung</button>
-        
-        <div id="hasilProrate" style="display:none; margin-top:20px">
-          <div class="hasil-box">
-            <p style="color:#94a3b8; font-size:15px; margin-bottom:8px">Tagihan tanggal 1</p>
-            <div class="hasil-angka" id="txtProrate">Rp0</div>
-            <p style="font-size:14px; color:#94a3b8" id="catatanProrate"></p>
-            
-            <div class="timeline">
-              <div class="timeline-item">Awal<br><b>Rp300.000</b></div>
-              <div class="timeline-item active">Tgl 1<br><b id="txtProrateKecil">Rp0</b></div>
-              <div class="timeline-item">Bulan depan<br><b id="txtPaketKecil">Rp0</b></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -293,42 +177,28 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
   <div class="container">
     <div class="section-head">
       <h2>Cara Daftar</h2>
-      <p class="subtitle">3 langkah, langsung aktif</p>
+      <p class="subtitle">4 langkah, langsung aktif</p>
     </div>
     <div class="grid-3">
-      <div class="card">
-        <h4 style="font-size:22px;margin-bottom:12px;color:var(--accent)">1. Pilih Paket</h4>
-        <p style="color:#cbd5e1">Klik "Daftar Sekarang" sesuai kebutuhan</p>
-      </div>
-      <div class="card">
-        <h4 style="font-size:22px;margin-bottom:12px;color:var(--accent)">2. Bayar QRIS</h4>
-        <p style="color:#cbd5e1">Scan & otomatis terverifikasi</p>
-      </div>
-      <div class="card">
-        <h4 style="font-size:22px;margin-bottom:12px;color:var(--accent)">3. Instalasi</h4>
-        <p style="color:#cbd5e1">Teknisi datang maksimal 1x24 jam</p>
-      </div>
+      <div class="card"><h4 style="font-size:22px;margin-bottom:12px;color:var(--accent)">1. Buat Akun</h4><p style="color:#cbd5e1">Klik "Daftar di sini" di modal login</p></div>
+      <div class="card"><h4 style="font-size:22px;margin-bottom:12px;color:var(--accent)">2. Login</h4><p style="color:#cbd5e1">Masuk dari tombol Login di navbar</p></div>
+      <div class="card"><h4 style="font-size:22px;margin-bottom:12px;color:var(--accent)">3. Bayar</h4><p style="color:#cbd5e1">Klik "Bayar & Pasang" lalu QRIS</p></div>
+      <div class="card"><h4 style="font-size:22px;margin-bottom:12px;color:var(--accent)">4. Instalasi</h4><p style="color:#cbd5e1">Teknisi datang maksimal 1x24 jam</p></div>
     </div>
   </div>
 </section>
 
 <section id="faq" class="gray">
   <div class="container">
-    <div class="section-head">
-      <h2>FAQ</h2>
-    </div>
+    <div class="section-head"><h2>FAQ</h2></div>
     <div style="max-width:800px;margin:0 auto">
-      <div class="card" style="text-align:left; margin-bottom:16px">
-        <h4 style="font-size:18px; margin-bottom:10px; color:var(--accent)">Skema pembayaran?</h4>
+      <div class="card" style="margin-bottom:16px">
+        <h4 style="font-size:18px;margin-bottom:10px;color:var(--accent)">Skema pembayaran?</h4>
         <p style="color:#cbd5e1">Bayar Rp300.000 saat daftar. Prorate tanggal 1 bulan depan. Tagihan bulanan tanggal 1 bulan berikutnya.</p>
       </div>
-      <div class="card" style="text-align:left; margin-bottom:16px">
-        <h4 style="font-size:18px; margin-bottom:10px; color:var(--accent)">Router bagaimana?</h4>
+      <div class="card" style="margin-bottom:16px">
+        <h4 style="font-size:18px;margin-bottom:10px;color:var(--accent)">Router bagaimana?</h4>
         <p style="color:#cbd5e1">Router Dual Band EPON dipinjamkan selama aktif. Tanpa biaya sewa tambahan.</p>
-      </div>
-      <div class="card" style="text-align:left; margin-bottom:16px">
-        <h4 style="font-size:18px; margin-bottom:10px; color:var(--accent)">Area coverage?</h4>
-        <p style="color:#cbd5e1">Cibarusah dan sekitarnya. Chat CS untuk cek ketersediaan.</p>
       </div>
     </div>
   </div>
@@ -338,6 +208,12 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
   <div class="container">
     <p style="font-size:26px;font-weight:800;margin-bottom:12px;background:linear-gradient(135deg,#fff,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">WBM.NET</p>
     <p style="color:#94a3b8">Internet RT-RW Net Cibarusah | CS: 0858-1723-0536</p>
+    <div class="footer-links">
+      <a href="#paket">Paket</a>
+      <a href="#cara">Cara Daftar</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://wa.me/6285817230536" target="_blank">Hubungi CS</a>
+    </div>
     <p style="margin-top:20px;font-size:14px;color:#64748b">© 2026 WBM.NET</p>
   </div>
 </footer>
@@ -351,111 +227,82 @@ const firebaseConfig = {
   messagingSenderId: "155140597764",
   appId: "1:155140597764:web:01318d797f15c85d62ad51"
 };
-
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const functions = firebase.functions();
 
-// Nav scroll effect
-window.addEventListener('scroll',()=>{
-  const nav = document.getElementById('navbar');
-  if(window.scrollY > 50) nav.classList.add('scrolled');
-  else nav.classList.remove('scrolled');
+// VALIDASI LOGIN + CEK ROLE ADMIN
+auth.onAuthStateChanged(async user => {
+  const navAuth = document.getElementById('navAuth');
+  if(user){
+    // Force refresh token biar claims admin kebaca
+    const token = await user.getIdTokenResult(true);
+    
+    if(token.claims.admin === true){
+      // Kalau admin
+      navAuth.innerHTML = '<a href="admin.html" class="btn-nav">Admin Panel</a> <button onclick="logout()" class="btn-logout">Logout</button>';
+    } else {
+      // Kalau pelanggan biasa
+      navAuth.innerHTML = '<a href="pelanggan.html" class="btn-nav">Pelanggan Panel</a> <button onclick="logout()" class="btn-logout">Logout</button>';
+    }
+  } else {
+    // Belum login
+    navAuth.innerHTML = '<button onclick="bukaModal()" class="btn-nav">Login</button>';
+  }
 });
 
-// Mobile menu toggle
-const menuBtn = document.getElementById('menuBtn');
-const navMenu = document.getElementById('navMenu');
-menuBtn.addEventListener('click',()=>{
-  menuBtn.classList.toggle('active');
-  navMenu.classList.toggle('active');
-});
-
-// Close menu pas klik link
-document.querySelectorAll('.nav-links a').forEach(link=>{
-  link.addEventListener('click',()=>{
-    menuBtn.classList.remove('active');
-    navMenu.classList.remove('active');
-  });
-});
-
-// PARTIKEL BINTANG JATUH - VERSI JATUH KE BAWAH
-const canvas = document.getElementById('stars');
-const ctx = canvas.getContext('2d');
-let stars = [];
-let meteors = [];
-
-function resizeCanvas(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+function bukaModal(){document.getElementById('modalLogin').style.display='flex'}
+function tutupModal(){
+  document.getElementById('modalLogin').style.display='none';
+  document.getElementById('errorLogin').style.display='none';
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPass').value='';
 }
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
 
-function createStars(){
-  stars = [];
-  const starCount = window.innerWidth < 768 ? 80 : 150;
-  for(let i=0; i<starCount; i++){
-    stars.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      radius: Math.random() * 1.2,
-      opacity: Math.random() * 0.8 + 0.2
-    });
+async function prosesLogin(){
+  const email=document.getElementById('loginEmail').value;
+  const pass=document.getElementById('loginPass').value;
+  const errorEl=document.getElementById('errorLogin');
+  errorEl.style.display='none';
+  
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    tutupModal();
+  }catch(err){
+    errorEl.innerText='Email atau password salah';
+    errorEl.style.display='block';
   }
 }
 
-function createMeteor(){
-  meteors.push({
-    x: Math.random() * canvas.width, // random dari kiri ke kanan
-    y: -100, // mulai dari atas layar
-    length: Math.random() * 60 + 40,
-    speedX: (Math.random() - 0.5) * 1, // gerak kiri/kanan dikit aja
-    speedY: Math.random() * 4 + 3, // jatuh ke bawah
-    opacity: 1
-  });
-}
+function logout(){auth.signOut()}
 
-function draw(){
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Bintang diam + kedip
-  stars.forEach(star => {
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${star.opacity})`;
-    ctx.fill();
-    star.opacity += (Math.random() - 0.5) * 0.02;
-    if(star.opacity > 1) star.opacity = 1;
-    if(star.opacity < 0.2) star.opacity = 0.2;
-  });
-  
-  // Meteor jatuh ke bawah
-  meteors.forEach((meteor, index) => {
-    ctx.beginPath();
-    const gradient = ctx.createLinearGradient(meteor.x, meteor.y, meteor.x + meteor.speedX * 10, meteor.y + meteor.length);
-    gradient.addColorStop(0, `rgba(255,255,255,${meteor.opacity})`);
-    gradient.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 2;
-    ctx.moveTo(meteor.x, meteor.y);
-    ctx.lineTo(meteor.x + meteor.speedX * 10, meteor.y + meteor.length);
-    ctx.stroke();
-    
-    meteor.x += meteor.speedX; // geser dikit kiri/kanan
-    meteor.y += meteor.speedY; // jatuh ke bawah
-    meteor.opacity -= 0.01;
-    
-    if(meteor.y > canvas.height + 50 || meteor.opacity <= 0){
-      meteors.splice(index, 1);
-    }
-  });
-}
+// Mobile menu
+const menuBtn=document.getElementById('menuBtn');
+const navMenu=document.getElementById('navMenu');
+menuBtn.addEventListener('click',()=>{menuBtn.classList.toggle('active');navMenu.classList.toggle('active')});
+document.querySelectorAll('.nav-links a').forEach(link=>{link.addEventListener('click',()=>{menuBtn.classList.remove('active');navMenu.classList.remove('active')})});
 
-createStars();
-setInterval(createMeteor, 500); // meteor tiap 1.8 detik
-setInterval(draw, 30);
+// Scroll effect
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50)});
 
+// Bintang jatuh
+const canvas=document.getElementById('stars');const ctx=canvas.getContext('2d');let stars=[],meteors=[];
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+function createStars(){stars=[];const c=window.innerWidth<768?80:150;for(let i=0;i<c;i++)stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,o:Math.random()*0.8+0.2})}
+function createMeteor(){meteors.push({x:Math.random()*canvas.width,y:-100,l:Math.random()*60+40,sx:(Math.random()-0.5)*1,sy:Math.random()*4+3,o:1})}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.o})`;ctx.fill();s.o+=(Math.random()-0.5)*0.02;s.o=Math.max(0.2,Math.min(1,s.o))});meteors.forEach((m,i)=>{const g=ctx.createLinearGradient(m.x,m.y,m.x+m.sx*10,m.y+m.l);g.addColorStop(0,`rgba(255,255,255,${m.o})`);g.addColorStop(1,'rgba(255,255,255,0)');ctx.strokeStyle=g;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(m.x+m.sx*10,m.y+m.l);ctx.stroke();m.x+=m.sx;m.y+=m.sy;m.o-=0.01;if(m.y>canvas.height+50||m.o<=0)meteors.splice(i,1)})}
+createStars();setInterval(createMeteor,500);setInterval(draw,30);
+
+// Bayar = WAJIB LOGIN DULU
 async function bayarInstalasi(paket, hargaPaket) {
+  const user = auth.currentUser;
+  if(!user){
+    alert('Silakan login dulu untuk melakukan pembayaran');
+    bukaModal();
+    return;
+  }
+
   const btn = document.getElementById('btn-'+paket);
   const textLama = btn.innerText;
   btn.innerText = 'Memproses...';
@@ -476,46 +323,6 @@ async function bayarInstalasi(paket, hargaPaket) {
     btn.disabled = false;
   }
 }
-
-function hitungProrate() {
-  const hargaPaket = parseInt(document.getElementById('selectPaket').value);
-  const tglInput = document.getElementById('inputTanggal').value;
-  const hasilDiv = document.getElementById('hasilProrate');
-  
-  if(!tglInput) {
-    alert('Pilih tanggal pasang');
-    return;
-  }
-  
-  const tglPasang = new Date(tglInput);
-  const bulan = tglPasang.getMonth();
-  const tahun = tglPasang.getFullYear();
-  const tanggal = tglPasang.getDate();
-  
-  const lastDay = new Date(tahun, bulan + 1, 0).getDate();
-  const hariKepake = lastDay - tanggal + 1;
-  
-  let prorate = 0;
-  let catatan = '';
-  
-  if(tanggal >= 26) {
-    prorate = 0;
-    catatan = '*Bebas biaya tambahan bulan pertama';
-  } else {
-    prorate = Math.round((hargaPaket / 30) * hariKepake / 1000) * 1000;
-    catatan = `*${hariKepake} hari × Rp${Math.round(hargaPaket/30).toLocaleString('id-ID')}`;
-  }
-  
-  document.getElementById('txtProrate').innerText = 'Rp' + prorate.toLocaleString('id-ID');
-  document.getElementById('txtProrateKecil').innerText = 'Rp' + prorate.toLocaleString('id-ID');
-  document.getElementById('txtPaketKecil').innerText = 'Rp' + hargaPaket.toLocaleString('id-ID');
-  document.getElementById('catatanProrate').innerText = catatan;
-  hasilDiv.style.display = 'block';
-  hasilDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-document.getElementById('inputTanggal').valueAsDate = new Date();
 </script>
-
 </body>
 </html>
