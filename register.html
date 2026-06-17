@@ -48,7 +48,7 @@ input:focus{outline:none;border-color:var(--accent)}
   
   <p class="note">Dengan daftar berarti kamu setuju dengan syarat & ketentuan WBM.NET</p>
   
-  <p class="link">Sudah punya akun? <a href="login.html">Login di sini</a></p>
+  <p class="link">Sudah punya akun? <a href="#" onclick="switchToLogin(event)">Login</a></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -84,6 +84,16 @@ document.getElementById('btnDaftar').onclick = async () => {
     errorEl.style.display = 'block';
     return;
   }
+
+  function switchToLogin(e) {
+  e.preventedDefault(); // ini kunci: cegah pindah halaman
+  
+  // Tutup modal daftar
+  document.getElementById('modalDaftar').classList.remove('active');
+  
+  // Buka modal login 
+  document.getElementById('modalLogin').classList.add('active');
+}
   
   btn.disabled = true;
   btn.innerText = 'Mendaftar...';
