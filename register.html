@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar - WBM.NET</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#4f46e5;--accent:#06b6d4;--dark:#0f172a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#090a0f;color:white;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.box{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);padding:40px;border-radius:24px;width:100%;max-width:420px;backdrop-filter:blur(16px)}
+h2{text-align:center;margin-bottom:8px;font-size:28px}
+.subtitle{text-align:center;color:#94a3b8;margin-bottom:32px;font-size:14px}
+input{width:100%;padding:16px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;background:rgba(255,255,255,0.05);color:white;font-size:15px;margin-bottom:16px}
+input:focus{outline:none;border-color:var(--accent)}
+.btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:12px;color:white;font-weight:700;font-size:16px;cursor:pointer;transition:0.3s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(79,70,229,0.4)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.error{color:#ef4444;font-size:13px;text-align:center;margin-top:12px;display:none}
+.success{color:#22c55e;font-size:13px;text-align:center;margin-top:12px;display:none}
+.link{text-align:center;margin-top:20px;font-size:14px;color:#94a3b8}
+.link a{color:var(--accent);text-decoration:none;font-weight:600}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;font-size:22px;font-weight:800}
+.logo img{width:32px;height:32px;filter:brightness(0) invert(1)}
+.note{font-size:12px;color:#94a3b8;text-align:center;margin-top:16px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div class="logo">
+    <img src="/icon-192.png" alt="logo">
+    WBM.NET
+  </div>
+  <h2>Daftar Pelanggan</h2>
+  <p class="subtitle">Buat akun baru untuk berlangganan</p>
+  
+  <input type="text" id="nama" placeholder="Nama Lengkap" required>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="tel" id="nohp" placeholder="No WhatsApp 08xxx" required>
+  <input type="password" id="password" placeholder="Password min 6 karakter" required>
+  
+  <button class="btn" id="btnDaftar">Daftar Sekarang</button>
+  
+  <p class="error" id="error"></p>
+  <p class="success" id="success"></p>
+  
+  <p class="note">Dengan daftar berarti kamu setuju dengan syarat & ketentuan WBM.NET</p>
+  
+  <p class="link">Sudah punya akun? <a href="login.html">Login di sini</a></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDbUE5grCTF86R4Dj7NE_i1Vcmzic67u2U",
+  authDomain: "billing-wbm-net.firebaseapp.com",
+  projectId: "billing-wbm-net",
+  storageBucket: "billing-wbm-net.firebasestorage.app",
+  messagingSenderId: "155140597764",
+  appId: "1:155140597764:web:01318d797f15c85d62ad51"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+document.getElementById('btnDaftar').onclick = async () => {
+  const nama = document.getElementById('nama').value;
+  const email = document.getElementById('email').value;
+  const nohp = document.getElementById('nohp').value;
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('btnDaftar');
+  const errorEl = document.getElementById('error');
+  const successEl = document.getElementById('success');
+  
+  errorEl.style.display = 'none';
+  successEl.style.display = 'none';
+  
+  if(password.length < 6){
+    errorEl.innerText = 'Password minimal 6 karakter';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerText = 'Mendaftar...';
+  
+  try {
+    const userCred = await auth.createUserWithEmailAndPassword(email, password);
+    
+    // Simpan data pelanggan ke Firestore. Role default = pelanggan
+    await db.collection('users').doc(userCred.user.uid).set({
+      nama: nama,
+      email: email,
+      nohp: nohp,
+      role: 'pelanggan',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    successEl.innerText = 'Pendaftaran berhasil! Mengalihkan...';
+    successEl.style.display = 'block';
+    
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1500);
+    
+  } catch(err){
+    errorEl.innerText = err.message.replace('Firebase: ', '');
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerText = 'Daftar Sekarang';
+  }
+};
+</script>
+</body>
+</html>
