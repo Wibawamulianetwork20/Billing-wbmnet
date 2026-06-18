@@ -41,6 +41,7 @@ nav{position:sticky;top:0;background:rgba(10,14,26,0.95);backdrop-filter:blur(16
 .btn{padding:14px 24px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:12px;color:white;font-weight:700;font-size:15px;cursor:pointer;width:100%;transition:0.3s;margin-top:16px}
 .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(79,70,229,0.4)}
 .btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-success{background:linear-gradient(135deg,var(--success),#16a34a)}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:500px}
 th{text-align:left;padding:14px;color:#94a3b8;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.1)}
@@ -48,6 +49,10 @@ td{padding:16px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:14
 tr:hover{background:rgba(255,255,255,0.03)}
 .empty{text-align:center;padding:40px;color:#64748b}
 .empty-icon{font-size:48px;margin-bottom:12px}
+.modal{display:none;position:fixed;z-index:999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(5px)}
+.modal.card{max-width:400px;margin:15% auto;position:relative}
+.close-modal{position:absolute;right:20px;top:20px;font-size:24px;cursor:pointer;color:#94a3b8}
+.modal input{width:100%;padding:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-size:16px;margin-bottom:16px}
 </style>
 </head>
 <body>
@@ -64,6 +69,18 @@ tr:hover{background:rgba(255,255,255,0.03)}
   <div class="welcome">
     <h1>Halo, <span id="namaPelanggan">...</span> 👋</h1>
     <p>Selamat datang di dashboard WBM.NET</p>
+  </div>
+
+  <!-- CARD SALDO BARU -->
+  <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(16,185,129,0.15));border:1px solid rgba(59,130,246,0.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div>
+        <h3 style="margin:0 0 4px">Saldo Dompet</h3>
+        <div style="font-size:32px;font-weight:800" id="saldoUser">Rp0</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:4px">Digunakan untuk bayar tagihan otomatis</div>
+      </div>
+      <button class="btn" style="width:auto;margin:0;padding:12px 20px" onclick="bukaModalDeposit()">+ Top Up Saldo</button>
+    </div>
   </div>
 
   <div class="grid-2">
@@ -85,7 +102,8 @@ tr:hover{background:rgba(255,255,255,0.03)}
           <div class="info-label">Status Tagihan</div>
           <span class="status-badge status-belum" id="statusTagihan">Loading</span>
         </div>
-        <button class="btn" id="btnBayar" onclick="bayarTagihan()">Bayar Sekarang</button>
+        <button class="btn btn-success" id="btnBayarSaldo" onclick="bayarPakaiSaldo()" style="display:none">Bayar Pakai Saldo</button>
+        <button class="btn" id="btnBayar" onclick="bayarTagihan()">Bayar QRIS</button>
       </div>
     </div>
   </div>
@@ -102,6 +120,18 @@ tr:hover{background:rgba(255,255,255,0.03)}
 
   <div style="background:rgba(59,130,246,0.1);border-left:3px solid var(--accent);padding:14px;border-radius:10px;margin-top:24px">
     <p style="font-size:13px;color:#a5b4fc">ℹ️ Tagihan jatuh tempo setiap tanggal 1. Keterlambatan >7 hari dapat menyebabkan pemutusan sementara.</p>
+  </div>
+</div>
+
+<!-- MODAL DEPOSIT -->
+<div id="modalDeposit" class="modal">
+  <div class="card">
+    <span onclick="tutupModalDeposit()" class="close-modal">&times;</span>
+    <h3 style="margin-bottom:16px">Top Up Saldo</h3>
+    <p style="font-size:14px;color:#94a3b8;margin-bottom:16px">Min Rp10.000. Tripay masih review, jadi ini simulasi dulu.</p>
+    <input type="number" id="jumlahDeposit" placeholder="Contoh: 50000" min="10000">
+    <button class="btn" onclick="prosesDeposit()">Deposit Sekarang</button>
+    <p style="font-size:12px;color:#64748b;margin-top:12px;text-align:center">Nanti kalau Tripay acc, tombol ini auto redirect ke QRIS</p>
   </div>
 </div>
 
@@ -123,13 +153,19 @@ const messaging = firebase.messaging();
 const VAPID_KEY = 'BEnf38GQeMXYVx4-xTsKeWmqY--nhHX---KU9CKjZXUAQLEKilCEuGTj9lFcEt0O8yPrU9dvbleRhoXQMeND3Pg';
 
 let currentUser = null;
+let saldoSekarang = 0;
+let hargaTagihanSekarang = 0;
+let idTagihanSekarang = null;
 
-// Register Service Worker untuk notif background
+// Register Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/firebase-messaging-sw.js');
 }
 
-// CEK LOGIN + AMBIL FCM TOKEN
+function formatRupiah(angka){
+  return 'Rp' + parseInt(angka || 0).toLocaleString('id-ID');
+}
+
 auth.onAuthStateChanged(async user => {
   if(!user){
     window.location.href = 'index.html';
@@ -137,25 +173,40 @@ auth.onAuthStateChanged(async user => {
   }
   currentUser = user;
 
-  // Ambil & simpan token FCM
   Notification.requestPermission().then(perm => {
     if (perm === 'granted') {
       messaging.getToken({ vapidKey: VAPID_KEY }).then(token => {
         if (token) {
           db.collection('users').doc(user.uid).set({ fcmToken: token }, {merge: true});
-          console.log('FCM Token tersimpan ✅');
         }
       }).catch(err => console.error('Gagal ambil token:', err));
     }
   });
 
-  // Notif saat app dibuka
   messaging.onMessage(payload => {
     alert(payload.notification.title + '\n' + payload.notification.body);
   });
 
   await loadDashboard(user.uid);
+  await loadSaldo(user.uid);
 });
+
+async function loadSaldo(uid){
+  const userDoc = await db.collection('users').doc(uid).get();
+  saldoSekarang = userDoc.data().saldo || 0;
+  document.getElementById('saldoUser').innerText = formatRupiah(saldoSekarang);
+  cekTombolBayar();
+}
+
+function cekTombolBayar(){
+  if(hargaTagihanSekarang > 0 && saldoSekarang >= hargaTagihanSekarang && idTagihanSekarang){
+    document.getElementById('btnBayarSaldo').style.display = 'block';
+    document.getElementById('btnBayar').innerText = 'Bayar QRIS Alternatif';
+  } else {
+    document.getElementById('btnBayarSaldo').style.display = 'none';
+    document.getElementById('btnBayar').innerText = 'Bayar QRIS';
+  }
+}
 
 async function loadDashboard(uid){
   try {
@@ -172,8 +223,8 @@ async function loadDashboard(uid){
     document.getElementById('infoHP').innerText = data.nohp || '-';
     document.getElementById('paketAktif').innerText = data.paket || 'Belum ada paket';
 
-    const harga = data.hargaPaket || 0;
-    document.getElementById('hargaTagihan').innerHTML = `Rp${harga.toLocaleString('id-ID')}<span>/bulan</span>`;
+    hargaTagihanSekarang = data.hargaPaket || 0;
+    document.getElementById('hargaTagihan').innerHTML = `Rp${hargaTagihanSekarang.toLocaleString('id-ID')}<span>/bulan</span>`;
 
     const bulanIni = new Date().getMonth() + 1;
     const tahunIni = new Date().getFullYear();
@@ -181,11 +232,15 @@ async function loadDashboard(uid){
     const snapTagihan = await tagihanRef.get();
 
     if(!snapTagihan.empty){
-      const tagihan = snapTagihan.docs[0].data();
+      const tagihanDoc = snapTagihan.docs[0];
+      const tagihan = tagihanDoc.data();
+      idTagihanSekarang = tagihanDoc.id;
+
       if(tagihan.status === 'lunas'){
         document.getElementById('statusTagihan').innerText = 'Lunas';
         document.getElementById('statusTagihan').className = 'status-badge status-aktif';
         document.getElementById('btnBayar').style.display = 'none';
+        document.getElementById('btnBayarSaldo').style.display = 'none';
       } else {
         document.getElementById('statusTagihan').innerText = 'Belum Bayar';
         document.getElementById('statusTagihan').className = 'status-badge status-belum';
@@ -194,6 +249,7 @@ async function loadDashboard(uid){
       document.getElementById('statusTagihan').innerText = 'Belum ada tagihan';
       document.getElementById('statusTagihan').className = 'status-badge status-belum';
       document.getElementById('btnBayar').style.display = 'none';
+      idTagihanSekarang = null;
     }
 
     const status = data.status || 'aktif';
@@ -202,6 +258,7 @@ async function loadDashboard(uid){
     statusEl.className = `status-badge status-${status}`;
 
     await loadRiwayat(uid);
+    cekTombolBayar();
   } catch(e) {
     console.error(e);
     alert('Gagal load data: ' + e.message);
@@ -239,6 +296,52 @@ async function loadRiwayat(uid){
   }
 }
 
+// BAYAR PAKAI SALDO
+async function bayarPakaiSaldo(){
+  if(!confirm(`Bayar Rp${hargaTagihanSekarang.toLocaleString('id-ID')} pakai saldo?`)) return;
+
+  const btn = document.getElementById('btnBayarSaldo');
+  btn.disabled = true;
+  btn.innerText = 'Memproses...';
+
+  try {
+    await db.runTransaction(async (transaction) => {
+      const userRef = db.collection('users').doc(currentUser.uid);
+      const tagihanRef = db.collection('tagihan').doc(idTagihanSekarang);
+
+      const userDoc = await transaction.get(userRef);
+      const saldo = userDoc.data().saldo || 0;
+
+      if(saldo < hargaTagihanSekarang) throw new Error('Saldo tidak cukup');
+
+      transaction.update(userRef, { saldo: saldo - hargaTagihanSekarang });
+      transaction.update(tagihanRef, {
+        status: 'lunas',
+        tanggalBayar: firebase.firestore.FieldValue.serverTimestamp(),
+        metode: 'saldo'
+      });
+
+      transaction.set(db.collection('riwayat_saldo').doc(), {
+        uid: currentUser.uid,
+        tipe: 'bayar_tagihan',
+        jumlah: -hargaTagihanSekarang,
+        saldo_sebelum: saldo,
+        saldo_sesudah: saldo - hargaTagihanSekarang,
+        waktu: firebase.firestore.FieldValue.serverTimestamp(),
+        keterangan: 'Bayar tagihan bulan ini'
+      });
+    });
+
+    alert('Pembayaran berhasil! Tagihan lunas ✅');
+    location.reload();
+  } catch(e){
+    alert('Gagal: ' + e.message);
+    btn.disabled = false;
+    btn.innerText = 'Bayar Pakai Saldo';
+  }
+}
+
+// BAYAR QRIS TRIPAY - PUNYA KAMU
 async function bayarTagihan(){
   const btn = document.getElementById('btnBayar');
   btn.disabled = true;
@@ -261,11 +364,63 @@ async function bayarTagihan(){
     alert('Gagal: ' + err.message);
     console.error(err);
     btn.disabled = false;
-    btn.innerText = 'Bayar Sekarang';
+    btn.innerText = 'Bayar QRIS';
   }
 }
 
-// LOGOUT + HAPUS TOKEN FCM
+// MODAL DEPOSIT
+function bukaModalDeposit(){
+  document.getElementById('modalDeposit').style.display = 'block';
+}
+function tutupModalDeposit(){
+  document.getElementById('modalDeposit').style.display = 'none';
+  document.getElementById('jumlahDeposit').value = '';
+}
+
+async function prosesDeposit(){
+  const jumlah = parseInt(document.getElementById('jumlahDeposit').value);
+  if(!jumlah || jumlah < 10000){
+    alert('Min deposit Rp10.000 bang');
+    return;
+  }
+
+  try {
+    const userRef = db.collection('users').doc(currentUser.uid);
+
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(userRef);
+      const saldoLama = doc.data().saldo || 0;
+      const saldoBaru = saldoLama + jumlah;
+      transaction.update(userRef, { saldo: saldoBaru });
+
+      transaction.set(db.collection('riwayat_saldo').doc(), {
+        uid: currentUser.uid,
+        tipe: 'deposit',
+        jumlah: jumlah,
+        saldo_sebelum: saldoLama,
+        saldo_sesudah: saldoBaru,
+        waktu: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'sukses_simulasi'
+      });
+    });
+
+    alert('Deposit Rp' + jumlah.toLocaleString('id-ID') + ' berhasil! ✅');
+    tutupModalDeposit();
+    await loadSaldo(currentUser.uid);
+
+  } catch(e){
+    alert('Gagal deposit: ' + e.message);
+    console.error(e);
+  }
+}
+
+window.onclick = function(e){
+  if(e.target == document.getElementById('modalDeposit')){
+    tutupModalDeposit();
+  }
+}
+
+// LOGOUT
 document.getElementById('btnLogout').addEventListener('click', async () => {
   if(currentUser){
     await db.collection('users').doc(currentUser.uid).update({ fcmToken: firebase.firestore.FieldValue.delete() });
