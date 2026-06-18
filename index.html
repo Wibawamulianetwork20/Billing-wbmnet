@@ -6,10 +6,6 @@
 <title>WBM.NET - Internet RT-RW Net Cibarusah</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon-192.png">
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
@@ -38,7 +34,7 @@ nav.scrolled{background:rgba(10,14,26,0.95);box-shadow:0 8px 32px rgba(0,0,0,0.3
 }
 
 /* MODAL */
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);z-index:999;display:none;align-items:center;justify-content:center}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);z-index:9999;display:none;align-items:center;justify-content:center}
 .modal-box{background:#0f172a;border:1px solid rgba(255,255,255,0.1);padding:40px;border-radius:20px;width:90%;max-width:400px;position:relative;display:none}
 .modal-box.active{display:block;animation:fadeIn 0.3s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
@@ -53,7 +49,6 @@ nav.scrolled{background:rgba(10,14,26,0.95);box-shadow:0 8px 32px rgba(0,0,0,0.3
 .switch-link{text-align:center;margin-top:16px;font-size:14px;color:#94a3b8}
 .switch-link a{color:var(--accent);cursor:pointer;font-weight:600;text-decoration:none}
 
-/* HERO DLL */
 .hero{padding:100px 0 80px;text-align:center}
 .hero h1{font-size:64px;font-weight:800;line-height:1.1;margin-bottom:24px;letter-spacing:-2px}
 .hero h1 span{background:linear-gradient(90deg,#a78bfa,#22d3ee,#a78bfa);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientMove 3s ease infinite}
@@ -73,7 +68,6 @@ section{padding:100px 0}
 .paket ul{list-style:none;margin-bottom:28px}
 .paket li{padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#cbd5e1}
 .paket li:before{content:"✓";color:var(--success);font-weight:800;margin-right:8px}
-.card{background:var(--glass);border:1px solid rgba(255,255,255,0.1);padding:32px;border-radius:20px}
 footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1px solid rgba(255,255,255,0.1)}
 @media(max-width:768px){.hero h1{font-size:40px;letter-spacing:-1px}}
 </style>
@@ -103,9 +97,9 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
   </div>
 </nav>
 
-<!-- MODAL LOGIN + REGISTER 1 FILE -->
+<!-- MODAL LOGIN + REGISTER -->
 <div id="modalAuth" class="modal" onclick="if(event.target.id==='modalAuth') tutupModal()">
-  <div class="modal-box">
+  <div class="modal-box" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="tutupModal()">×</button>
     
     <!-- LOGIN BOX -->
@@ -197,149 +191,45 @@ footer{background:rgba(0,0,0,0.4);padding:60px 0;text-align:center;border-top:1p
   </div>
 </footer>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDbUE5grCTF86R4Dj7NE_i1Vcmzic67u2U",
-  authDomain: "billing-wbm-net.firebaseapp.com",
-  projectId: "billing-wbm-net",
-  storageBucket: "billing-wbm-net.firebasestorage.app",
-  messagingSenderId: "155140597764",
-  appId: "1:155140597764:web:01318d797f15c85d62ad51"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const functions = firebase.functions();
+<!-- IMPORT MODULE - URUTAN PENTING -->
+<script type="module" src="./auth.js"></script>
 
-const btnLogin = document.getElementById('btnLogin');
-const btnRegister = document.getElementById('btnRegister');
-btnLogin.dataset.text = btnLogin.innerText;
-btnRegister.dataset.text = btnRegister.innerText;
-
-function setLoading(btn, state){
-  btn.disabled = state;
-  btn.innerText = state ? 'Loading...' : btn.dataset.text;
-}
-
-// MODAL CONTROL
-function bukaModal(){
-  document.getElementById('modalAuth').style.display='flex';
-  switchModal('login');
-}
-function tutupModal(){
-  document.getElementById('modalAuth').style.display='none';
-  document.getElementById('errorLogin').style.display='none';
-  document.getElementById('errorRegister').style.display='none';
-  document.getElementById('successRegister').style.display='none';
-}
-function switchModal(type){
-  document.getElementById('boxLogin').classList.remove('active');
-  document.getElementById('boxRegister').classList.remove('active');
-  document.getElementById('box' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
-}
-
-// REGISTER
-btnRegister.onclick = async () => {
-  const nama = document.getElementById('regNama').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const nohp = document.getElementById('regHP').value.trim();
-  const pass = document.getElementById('regPass').value;
-  const errorEl = document.getElementById('errorRegister');
-  const successEl = document.getElementById('successRegister');
-  
-  errorEl.style.display='none';
-  successEl.style.display='none';
-  
-  if(!nama || !email || !nohp || !pass){
-    errorEl.innerText = 'Semua field wajib diisi';
-    errorEl.style.display='block';
-    return;
-  }
-  if(pass.length < 6){
-    errorEl.innerText = 'Password minimal 6 karakter';
-    errorEl.style.display='block';
-    return;
-  }
-  
-  setLoading(btnRegister, true);
-  
-  try{
-    const userCred = await auth.createUserWithEmailAndPassword(email, pass);
-    await db.collection('users').doc(userCred.user.uid).set({
-      nama, email, nohp, role: 'pelanggan', createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    successEl.innerText = 'Daftar berhasil! Silakan login';
-    successEl.style.display='block';
-    setTimeout(() => switchModal('login'), 1500);
-  }catch(err){
-    errorEl.innerText = err.message.replace('Firebase: ', '');
-    errorEl.style.display='block';
-  }
-  setLoading(btnRegister, false);
-}
-
-// LOGIN
-btnLogin.onclick = async () => {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const errorEl = document.getElementById('errorLogin');
-  errorEl.style.display='none';
-  
-  if(!email || !pass){
-    errorEl.innerText = 'Email dan password wajib diisi';
-    errorEl.style.display='block';
-    return;
-  }
-  
-  setLoading(btnLogin, true);
-  
-  try{
-    await auth.signInWithEmailAndPassword(email, pass);
-    tutupModal();
-    window.location.href = 'pelanggan.html';
-  }catch(err){
-    errorEl.innerText = 'Email atau password salah';
-    errorEl.style.display='block';
-  }
-  setLoading(btnLogin, false);
-}
-
-// CEK ROLE + NAVBAR
-auth.onAuthStateChanged(async user => {
-  const navAuth = document.getElementById('navAuth');
-  if(user){
-    const token = await user.getIdTokenResult(true);
-    if(token.claims.admin === true){
-      navAuth.innerHTML = '<a href="admin.html" class="btn-nav">Admin Panel</a> <button onclick="logout()" class="btn-logout">Logout</button>';
-    } else {
-      navAuth.innerHTML = '<a href="pelanggan.html" class="btn-nav">Pelanggan Panel</a> <button onclick="logout()" class="btn-logout">Logout</button>';
-    }
-  } else {
-    navAuth.innerHTML = '<button onclick="bukaModal()" class="btn-nav">Login</button>';
-  }
-});
-
-function logout(){auth.signOut()}
+<script type="module">
+import { functions } from "./firebase.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 
 // Mobile menu
-const menuBtn=document.getElementById('menuBtn');
-const navMenu=document.getElementById('navMenu');
-menuBtn.addEventListener('click',()=>{menuBtn.classList.toggle('active');navMenu.classList.toggle('active')});
+const menuBtn = document.getElementById('menuBtn');
+const navMenu = document.getElementById('navMenu');
+if(menuBtn){
+  menuBtn.addEventListener('click', () => {
+    menuBtn.classList.toggle('active');
+    navMenu.classList.toggle('active');
+  });
+}
 
 // Scroll effect
-window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50)});
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
 
 // Bintang
-const canvas=document.getElementById('stars');const ctx=canvas.getContext('2d');let stars=[],meteors=[];
-function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
-resizeCanvas();window.addEventListener('resize',resizeCanvas);
-function createStars(){stars=[];const c=window.innerWidth<768?80:150;for(let i=0;i<c;i++)stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,o:Math.random()*0.8+0.2})}
-function createMeteor(){if(Math.random()<0.3)meteors.push({x:Math.random()*canvas.width,y:-100,l:Math.random()*60+40,sx:(Math.random()-0.5)*1,sy:Math.random()*4+3,o:1})}
-function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.o})`;ctx.fill();s.o+=(Math.random()-0.5)*0.02;s.o=Math.max(0.2,Math.min(1,s.o))});meteors.forEach((m,i)=>{const g=ctx.createLinearGradient(m.x,m.y,m.x+m.sx*10,m.y+m.l);g.addColorStop(0,`rgba(255,255,255,${m.o})`);g.addColorStop(1,'rgba(255,255,255,0)');ctx.strokeStyle=g;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(m.x+m.sx*10,m.y+m.l);ctx.stroke();m.x+=m.sx;m.y+=m.sy;m.o-=0.01;if(m.y>canvas.height+50||m.o<=0)meteors.splice(i,1)})}
-createStars();setInterval(createMeteor,500);setInterval(draw,30);
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [], meteors = [];
+function resizeCanvas(){canvas.width = window.innerWidth; canvas.height = window.innerHeight}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+function createStars(){stars = []; const c = window.innerWidth < 768 ? 80 : 150; for(let i=0; i<c; i++) stars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.2, o:Math.random()*0.8+0.2})}
+function createMeteor(){if(Math.random()<0.3) meteors.push({x:Math.random()*canvas.width, y:-100, l:Math.random()*60+40, sx:(Math.random()-0.5)*1, sy:Math.random()*4+3, o:1})}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height); stars.forEach(s=>{ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,255,255,${s.o})`; ctx.fill(); s.o+=(Math.random()-0.5)*0.02; s.o=Math.max(0.2,Math.min(1,s.o))}); meteors.forEach((m,i)=>{const g=ctx.createLinearGradient(m.x,m.y,m.x+m.sx*10,m.y+m.l); g.addColorStop(0,`rgba(255,255,255,${m.o})`); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.strokeStyle=g; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(m.x+m.sx*10,m.y+m.l); ctx.stroke(); m.x+=m.sx; m.y+=m.sy; m.o-=0.01; if(m.y>canvas.height+50||m.o<=0) meteors.splice(i,1)})}
+createStars();
+setInterval(createMeteor, 500);
+setInterval(draw, 30);
 
 // BAYAR WAJIB LOGIN
-async function bayarInstalasi(paket, hargaPaket) {
+window.bayarInstalasi = async function(paket, hargaPaket) {
+  const { auth } = await import("./firebase.js");
   const user = auth.currentUser;
   if(!user){
     alert('Silakan login dulu untuk melakukan pembayaran');
@@ -353,7 +243,7 @@ async function bayarInstalasi(paket, hargaPaket) {
   btn.disabled = true;
 
   try {
-    const createInvoice = functions.httpsCallable('createTripayInvoice');
+    const createInvoice = httpsCallable(functions, 'createTripayInvoice');
     const result = await createInvoice({
       amount: 300000,
       product: 'Instalasi ' + paket,
