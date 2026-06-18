@@ -41,14 +41,14 @@ input:focus{outline:none;border-color:var(--accent)}
   <input type="tel" id="nohp" placeholder="No WhatsApp 08xxx" required>
   <input type="password" id="password" placeholder="Password min 6 karakter" required>
   
-  <button class="btn" id="btnDaftar">Daftar Sekarang</button>
+  <button class="btn" id="btnDaftar" data-text="Daftar Sekarang">Daftar Sekarang</button>
   
   <p class="error" id="error"></p>
   <p class="success" id="success"></p>
   
   <p class="note">Dengan daftar berarti kamu setuju dengan syarat & ketentuan WBM.NET</p>
   
-  <p class="link">Sudah punya akun? <a href="#" onclick="switchToLogin(event)">Login</a></p>
+  <p class="link">Sudah punya akun? <a href="index.html">Login</a></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -67,41 +67,37 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-document.getElementById('btnDaftar').onclick = async () => {
-  const nama = document.getElementById('nama').value;
-  const email = document.getElementById('email').value;
-  const nohp = document.getElementById('nohp').value;
+const btn = document.getElementById('btnDaftar');
+btn.dataset.text = btn.innerText;
+
+btn.onclick = async () => {
+  const nama = document.getElementById('nama').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const nohp = document.getElementById('nohp').value.trim();
   const password = document.getElementById('password').value;
-  const btn = document.getElementById('btnDaftar');
   const errorEl = document.getElementById('error');
   const successEl = document.getElementById('success');
   
   errorEl.style.display = 'none';
   successEl.style.display = 'none';
   
+  if(!nama || !email || !nohp || !password){
+    errorEl.innerText = 'Semua field wajib diisi';
+    errorEl.style.display = 'block';
+    return;
+  }
   if(password.length < 6){
     errorEl.innerText = 'Password minimal 6 karakter';
     errorEl.style.display = 'block';
     return;
   }
 
-  function switchToLogin(e) {
-  e.preventedDefault(); // ini kunci: cegah pindah halaman
-  
-  // Tutup modal daftar
-  document.getElementById('modalDaftar').classList.remove('active');
-  
-  // Buka modal login 
-  document.getElementById('modalLogin').classList.add('active');
-}
-  
   btn.disabled = true;
   btn.innerText = 'Mendaftar...';
   
   try {
     const userCred = await auth.createUserWithEmailAndPassword(email, password);
     
-    // Simpan data pelanggan ke Firestore. Role default = pelanggan
     await db.collection('users').doc(userCred.user.uid).set({
       nama: nama,
       email: email,
@@ -121,7 +117,7 @@ document.getElementById('btnDaftar').onclick = async () => {
     errorEl.innerText = err.message.replace('Firebase: ', '');
     errorEl.style.display = 'block';
     btn.disabled = false;
-    btn.innerText = 'Daftar Sekarang';
+    btn.innerText = btn.dataset.text;
   }
 };
 </script>
