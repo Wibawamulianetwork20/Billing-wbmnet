@@ -130,7 +130,10 @@ nav{position:fixed;top:0;left:0;width:100%;background:rgba(15,23,42,0.8);backdro
 @keyframes move{0%{background-position:0% 50%}100%{background-position:200% 50%}}
 .hero p{font-size:12px;color:#94a3b8;margin-bottom:36px;max-width:600px;margin:0 auto 36px}
 .btn-primary{display:inline-block;padding:18px 36px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;text-decoration:none;border-radius:14px;font-weight:700;font-size:16px;box-shadow:0 8px 25px rgba(37,99,235,0.4)}
-
+@keyframes kilauGeser {
+ 0% { background-position: -100% 0; }
+ 100% { background-position: 100% 0; }
+}
 /* ABOUT / PORTFOLIO */
 section{padding:90px 0}
 .head{text-align:center;margin-bottom:60px}
@@ -256,7 +259,18 @@ footer{background:rgba(0,0,0,0.5);padding:50px 0;text-align:center;border-top:1p
   <div class="container">
     <div class="nav-wrap">
       <a href="#" class="logo">
-        <img src="icon-192.png" alt="WBM Logo">
+        <img src="icon-192.png" alt="WBM Logo"><span style="
+    font-size: 34px; 
+    font-weight: bold;
+    background: linear-gradient(90deg, #ffd700 0%, #fff 50%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 100%;
+    animation: kilauGeser 2s infinite;
+  ">
+    WBM.NET
+  </span>
+</a>
       <ul class="nav-links" id="menu">
         <li><a href="#tentang">Tentang</a></li>
         <li><a href="#paket">Paket</a></li>
