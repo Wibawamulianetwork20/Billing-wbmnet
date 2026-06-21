@@ -101,7 +101,7 @@ nav{position:fixed;top:0;left:0;width:100%;background:rgba(15,23,42,0.8);backdro
     font-size:15px;
   }
 
-  body{padding-top:72px}
+  body{padding-top:30px}
   .hero h1{font-size:38px;letter-spacing:-1px}
   .about-grid{grid-template-columns:1fr}
 }
@@ -127,13 +127,15 @@ nav{position:fixed;top:0;left:0;width:100%;background:rgba(15,23,42,0.8);backdro
 .hero{padding:110px 0 90px;text-align:center}
 .hero h1{font-weight:800;line-height:1.15;margin-bottom:20px;letter-spacing:-1.5px}
 .hero h1 span{background:linear-gradient(90deg,#60a5fa,#22d3ee,#60a5fa);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:move 3s ease infinite}
-@keyframes move{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-.hero p{font-size:12px;color:#94a3b8;margin-bottom:36px;max-width:600px;margin:0 auto 36px}
-.btn-primary{display:inline-block;padding:18px 36px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;text-decoration:none;border-radius:14px;font-weight:700;font-size:16px;box-shadow:0 8px 25px rgba(37,99,235,0.4)}
-@keyframes kilauGeser {
- 0% { background-position: -100% 0; }
- 100% { background-position: 100% 0; }
+@keyframes kilauIntens {
+ 0% { background-position: -200% 0; filter: brightness(2); }
+ 50% { filter: brightness(2.5); }
+ 100% { background-position: 200% 0; filter: brightness(2); }
 }
+@keyframes move{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+.hero p{font-size:19px;color:#94a3b8;margin-bottom:36px;max-width:600px;margin:0 auto 36px}
+.btn-primary{display:inline-block;padding:18px 36px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;text-decoration:none;border-radius:14px;font-weight:700;font-size:16px;box-shadow:0 8px 25px rgba(37,99,235,0.4)}
+
 /* ABOUT / PORTFOLIO */
 section{padding:90px 0}
 .head{text-align:center;margin-bottom:60px}
@@ -258,18 +260,19 @@ footer{background:rgba(0,0,0,0.5);padding:50px 0;text-align:center;border-top:1p
 <nav id="navbar">
   <div class="container">
     <div class="nav-wrap">
-      <a href="#" class="logo">
-        <img src="icon-192.png" alt="WBM Logo"><span style="
+      <a href="#" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+  <img src="icon-192.png" alt="WBM Logo" style="width: 40px; height: 40px;">
+  <span style="
     font-size: 34px; 
-    font-weight: bold;
-    background: linear-gradient(90deg, #ffd700 0%, #fff 50%, #ffd700 100%);
+    font-weight: 800;
+    background: linear-gradient(110deg, #ffd700 0%, #130df5 20%, #ffd700 40%, #fff 50%, #ffd700 60%, #1e00bf 80%, #ffd700 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-size: 200% 100%;
-    animation: kilauGeser 2s infinite;
-  ">
-    WBM.NET
-  </span>
+    background-size: 300% 100%;
+    animation: kilauIntens 3s linear infinite;
+    text-shadow: 0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.4);
+    letter-spacing: 1px;
+  ">WBM.NET</span>
 </a>
       <ul class="nav-links" id="menu">
         <li><a href="#tentang">Tentang</a></li>
