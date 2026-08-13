@@ -1,4 +1,4 @@
-import { auth } from "./firebase.js";
+import { auth } from "firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const menuBtn = document.getElementById("menuBtn");
